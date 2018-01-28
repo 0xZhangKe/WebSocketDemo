@@ -1,8 +1,7 @@
 ## WebSocketDemo
  WebSocket 安卓客户端的实现方式。
 ## 介绍
-如果不想了解其中的原理可以直接拉到最后面的使用方式章节，按照教程使用即可，或者直接打开 demo 查看代码，代码地址：。</p>
-https://github.com/0xZhangKe/WebSocketDemo</p>
+如果不想了解其中的原理可以直接拉到最后面的使用方式章节，按照教程使用即可，或者直接打开 demo 查看代码。</p>
 
 本文使用一个后台 Service 来建立 WebSocket 连接，Activity 与 Fragment 需要使用 WebSocket 接口时只需要绑定该服务既可。</p>
 WebSocketService 接收到数据之后会通知每一个绑定了 WebSocketService 服务的 Activity 及 Fragment，其自身也可以对返回的数据进行判断等等，具体如何操作根据业务需求定。</p>
@@ -65,7 +64,7 @@ WebSocketService 需要实现这个接口，后面绑定 WebSocketService 时直
 我这里为了降低代码的耦合度，将与业务逻辑相关的代码（接口地址、数据处理及分发等）与 WebSocket 的连接、发送数据等操作剥离开来，所以这里创建的时一个抽象类 AbsWebSocketService 来实现与业务逻辑无关的代码。</p>
 在实际使用中只需要创建一个 WebSocketService 并继承该 AbsWebSocketService 既可，不需要改动其中的代码。</p>
 首先看一下 AbsWebSocketService 的代码：
-```
+```java
 public abstract class AbsBaseWebSocketService extends Service implements IWebSocket {
 
     private static final String TAG = "AbsBaseWebSocketService";
@@ -330,7 +329,7 @@ void dispatchResponse(String textResponse)//接收到数据后回调此方法，
 创建好上面的 AbsWebSocketService 服务之后，还需要根据业务需求创建一个 WebSocketService 实现该类。</p>
 ### WebSocketService 服务
 这个代码就很简单了，如下：
-```
+```java
 public class WebSocketService extends AbsBaseWebSocketService {
 
     @Override
@@ -364,7 +363,7 @@ public class WebSocketService extends AbsBaseWebSocketService {
 ```
 dispatchResponse(String) 方法中就是将数据转换成对应的实体，然后使用 EventBus 将其发送出去，可以再其中做一些数据正确的判断，比如上面注释的地方。</p>
 其中的 CommonResponse 是我们后台接口的一个标准模板，所有格接口返回的数据都应该按照这个格式来，这个类就按照自家的接口写就行了，不用按照我的。看一下其中的代码：</p>
-```
+```java
 public class CommonResponse<T> {
 
     private String msg;
@@ -409,7 +408,7 @@ public class CommonResponse<T> {
 其中 path 表示接口地址，其本质就是个字符串，我们通过这个字符串当做一个标识符，标识返回的数据属于哪个接口，然后我们才能做出对应的操作。</p>
 泛型 T 表示数据的实体，一般来说我们会按照不同的接口写出不同的实体方便使用，当然了，这些都不重要，也只是我的个人习惯，这里也不涉及核心代码，所以可以根据个人爱好随意改动。</p>
 别忘了在 AndroidManifest 中注册该服务，然后在合适的时候启动该服务，我的是在 Application 中的 onCreate 方法启动的：
-```
+```java
 public class GateApplication extends Application {
 
     @Override
@@ -427,7 +426,7 @@ public class GateApplication extends Application {
 先来看一下 ABSBaseWebSocketActivity 的代码：
 ### AbsBaseWebSocketActivity
 其中主要包括绑定服务，判断连接状态，发送数据等操作，另外暴露出了几个方法以供使用：
-```
+```java
 public abstract class AbsBaseWebSocketActivity extends BaseAppCompatActivity {
     /**
      * 服务重连次数，
@@ -635,7 +634,7 @@ void onErrorResponse(WebSocketSendDataErrorEvent response);//当有发送数据�
 直接使需要的 Activity 继承 ABSBaseWebSocketActivity，调用 sendText(String) 方法既可发送数据，接收到数据后会回调 onCommonResponse(CommonResponse<String>) 方法或 onErrorResponse(WebSocketSendDataErrorEvent) 方法。</p>
 下面用一个使用案例更直观一点：</p>
 假设现在要在 LoginActivity 中实现登陆功能，首先创建 LoginActivity，并初始化控件：
-```
+```java
 public class LoginActivity extends AbsBaseWebSocketActivity {
 
     private EditText etAccount;
@@ -689,7 +688,7 @@ public class LoginActivity extends AbsBaseWebSocketActivity {
 ```
 上面的代码就是很简单的初始化控件，监听按键输入。
 其中的 login(String, String) 方法是空的，现在我们来完成 login 方法：
-```
+```java
     private void login(String account, String password){
         JSONObject param = new JSONObject();
         param.put("account", account);
@@ -700,7 +699,7 @@ public class LoginActivity extends AbsBaseWebSocketActivity {
     }
 ```
 以及获取返回数据：
-```
+```java
     /**
      * 登陆成功
      */
@@ -720,7 +719,7 @@ public class LoginActivity extends AbsBaseWebSocketActivity {
     }
 ```
 下面来看一下完整的 LoginActivity 代码：
-```
+```java
 public class LoginActivity extends AbsBaseWebSocketActivity {
     /**
      * 假设这是登陆的接口Path
@@ -796,5 +795,4 @@ public class LoginActivity extends AbsBaseWebSocketActivity {
 另外还有一点需要注意的，考虑这样的一种情况，比如我们在打开登陆界面时需要初始化一些数据，如果是 HTTP 接口我们可以直接在 onCreate 方法中获取数据就行了，但是使用 WebSocket 就没办法在 onCreate 去调用，因为打开一个新的 Activity 时我们需要先绑定 WebSocketService 服务，我们得在绑定完成后才能调用 WebSocket 接口。
 ABSBaseWebSocketActivity 中提供了一个 onServiceBindSuccess() 方法，这个方法就是绑定成功后的回调方法，我们可以再这个方法中初始化一些数据。
 **PS：我们可以在创建一个 BaseWebSocketServiceActivity 抽象类，实现其中的 Class<? extends AbsBaseWebSocketService> getWebSocketClass() 方法，因为在同一个 APP 中这个方法的返回值是一直不变的。**
-到此关于如何在安卓上实现一个 WebSocket 客户端就介绍完了，有问题欢迎讨论，可以点击下面的地址查看源码及 demo：</p>
-https://github.com/0xZhangKe/WebSocketDemo
+到此关于如何在安卓上实现一个 WebSocket 客户端就介绍完了，有问题欢迎讨论。
