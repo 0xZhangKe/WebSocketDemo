@@ -792,7 +792,7 @@ public class LoginActivity extends AbsBaseWebSocketActivity {
 }
 ```
 按照上面所示就可以完成一次 WebSocket 的接口调用。</p>
-另外还有一点需要注意的，考虑这样的一种情况，比如我们在打开登陆界面时需要初始化一些数据，如果是 HTTP 接口我们可以直接在 onCreate 方法中获取数据就行了，但是使用 WebSocket 就没办法在 onCreate 去调用，因为打开一个新的 Activity 时我们需要先绑定 WebSocketService 服务，我们得在绑定完成后才能调用 WebSocket 接口。
-ABSBaseWebSocketActivity 中提供了一个 onServiceBindSuccess() 方法，这个方法就是绑定成功后的回调方法，我们可以再这个方法中初始化一些数据。
+另外还有一点需要注意的，考虑这样的一种情况，比如我们在打开登陆界面时需要初始化一些数据，如果是 HTTP 接口我们可以直接在 onCreate 方法中获取数据就行了，但是使用 WebSocket 就没办法在 onCreate 去调用，因为打开一个新的 Activity 时我们需要先绑定 WebSocketService 服务，我们得在绑定完成后才能调用 WebSocket 接口。</p>
+ABSBaseWebSocketActivity 中提供了一个 onServiceBindSuccess() 方法，这个方法就是绑定成功后的回调方法，我们可以再这个方法中初始化一些数据。</p>
 **PS：我们可以在创建一个 BaseWebSocketServiceActivity 抽象类，实现其中的 Class<? extends AbsBaseWebSocketService> getWebSocketClass() 方法，因为在同一个 APP 中这个方法的返回值是一直不变的。**
 到此关于如何在安卓上实现一个 WebSocket 客户端就介绍完了，有问题欢迎讨论。
