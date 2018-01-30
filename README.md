@@ -19,12 +19,13 @@ Activity/Fragment 绑定 WebSocket 服务，绑定成功后可以直接调用 We
 ### 添加必要的依赖
 首先添加 WebSocket 框架依赖：
 ```
-implementation 'org.greenrobot:eventbus:3.0.0'
+mpile 'com.neovisionaries:nv-websocket-client:2.3'
 ```
 这个框架也是我在 Github 上找了一圈之后选中的一个，使用的人很多，文档齐全，还在继续维护。</p>
-另外还要添加一个阿里的 JSON 框架：
+另外还要添加一个 EventBus 及阿里的 JSON 框架：
 ```
-implementation 'com.alibaba:fastjson:1.2.33'
+compile 'com.alibaba:fastjson:1.2.33'
+compile 'org.greenrobot:eventbus:3.0.0'
 ```
 好了完事大吉，现在开始吧。</p>
 
