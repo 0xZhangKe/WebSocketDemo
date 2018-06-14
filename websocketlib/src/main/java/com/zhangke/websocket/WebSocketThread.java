@@ -47,6 +47,7 @@ public class WebSocketThread extends Thread {
 
     private boolean quit;
     private SocketListener mSocketListener;
+    private ThreadStartListener threadStartListener;
 
     /**
      * 0-未连接
@@ -65,6 +66,9 @@ public class WebSocketThread extends Thread {
         Looper.prepare();
         mHandler = new WebSocketHandler();
         quit = false;
+        if (threadStartListener != null) {
+            threadStartListener.started();
+        }
         Looper.loop();
     }
 
@@ -74,6 +78,17 @@ public class WebSocketThread extends Thread {
 
     public void setSocketListener(SocketListener socketListener) {
         this.mSocketListener = socketListener;
+    }
+
+    public void setThreadStartListener(ThreadStartListener threadStartListener) {
+        this.threadStartListener = threadStartListener;
+    }
+
+    /**
+     * 获取连接状态
+     */
+    public int getConnectState() {
+        return connectStatus;
     }
 
     private class WebSocketHandler extends Handler {
@@ -100,11 +115,6 @@ public class WebSocketThread extends Thread {
                     if (webSocket != null && msg.obj instanceof String) {
                         if (webSocket.isConnecting() && !webSocket.isClosed()) {
                             send((String) msg.obj);
-                        } else {
-                            if (connectStatus == 0) {
-                                mHandler.sendEmptyMessage(MessageType.CONNECT);
-                            }
-                            mHandler.sendMessageDelayed(msg, 500);
                         }
                     }
                     break;
@@ -138,7 +148,6 @@ public class WebSocketThread extends Thread {
                             @Override
                             public void onClose(int code, String reason, boolean remote) {
                                 connectStatus = 0;
-                                mHandler.sendEmptyMessage(MessageType.DISCONNECT);
                                 if (mSocketListener != null) {
                                     mSocketListener.onDisconnected();
                                 }
@@ -190,7 +199,5 @@ public class WebSocketThread extends Thread {
                 webSocket.send(text);
             }
         }
-
     }
-
 }
