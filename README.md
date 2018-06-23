@@ -1,7 +1,7 @@
 ## WebSocketDemo
  WebSocket 安卓客户端的实现方式。
  
-## 目前2.0版本正在开发，需要使用的请不要直接clone，直接[下载1.0版本的代码使用](https://github.com/0xZhangKe/WebSocketDemo/releases/tag/1.0)，以下文章介绍的也是1.0版本的使用方式。
+### 目前2.0版本正在开发，需要使用的不要直接clone，请[下载1.0版本的代码使用](https://github.com/0xZhangKe/WebSocketDemo/releases/tag/1.0)，以下文章介绍的也是1.0版本的使用方式。
 
 ## 介绍
 如果不想了解其中的原理可以直接拉到最后面的使用方式章节，按照教程使用即可，或者直接打开 demo 查看代码。</p>
