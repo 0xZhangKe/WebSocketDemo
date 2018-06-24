@@ -29,6 +29,12 @@ public abstract class BaseWebSocketService extends Service implements SocketList
         mWebSocketThread.start();
     }
 
+    @Override
+    public void onDestroy() {
+        mWebSocketThread.getHandler().sendEmptyMessage(MessageType.QUIT);
+        super.onDestroy();
+    }
+
     public void addListener(SocketListener listener) {
         mSocketListenerList.add(listener);
     }
