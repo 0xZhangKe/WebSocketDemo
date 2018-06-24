@@ -10,7 +10,7 @@ import java.util.List;
  * WebSocket基础服务
  * Created by ZhangKe on 2018/6/13.
  */
-public abstract class BaseWebSocketService extends Service implements SocketListener, ThreadStartListener {
+public abstract class BaseWebSocketService extends Service implements SocketListener {
 
     /**
      * 获取 WebSocket 连接地址
@@ -18,7 +18,6 @@ public abstract class BaseWebSocketService extends Service implements SocketList
     protected abstract String getConnectUrl();
 
     private WebSocketThread mWebSocketThread;
-    private Handler mHandler;
 
     private List<SocketListener> mSocketListenerList = new ArrayList<>();
 
@@ -27,7 +26,6 @@ public abstract class BaseWebSocketService extends Service implements SocketList
         super.onCreate();
         mWebSocketThread = new WebSocketThread(getConnectUrl());
         mWebSocketThread.setSocketListener(this);
-        mWebSocketThread.setThreadStartListener(this);
         mWebSocketThread.start();
     }
 
@@ -37,12 +35,6 @@ public abstract class BaseWebSocketService extends Service implements SocketList
 
     public void removeListener(SocketListener listener) {
         mSocketListenerList.remove(listener);
-    }
-
-    @Override
-    public void started() {
-        mHandler = mWebSocketThread.getHandler();
-        mHandler.sendEmptyMessage(MessageType.CONNECT);
     }
 
     @Override

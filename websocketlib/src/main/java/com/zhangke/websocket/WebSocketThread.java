@@ -6,26 +6,12 @@ import android.os.Message;
 
 import com.zhangke.zlog.ZLog;
 
-import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
-import org.java_websocket.exceptions.InvalidDataException;
-import org.java_websocket.exceptions.InvalidHandshakeException;
-import org.java_websocket.framing.Framedata;
-import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.handshake.ClientHandshakeBuilder;
-import org.java_websocket.handshake.HandshakeBuilder;
 import org.java_websocket.handshake.ServerHandshake;
-import org.java_websocket.handshake.ServerHandshakeBuilder;
 
-import java.io.IOException;
-import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
 
 /**
  * WebSocket线程
@@ -41,13 +27,14 @@ public class WebSocketThread extends Thread {
      */
     private String connectUrl;
 
-    private WebSocketClient webSocket;
+    private WebSocketClient mWebSocket;
 
     private WebSocketHandler mHandler;
 
     private boolean quit;
     private SocketListener mSocketListener;
-    private ThreadStartListener threadStartListener;
+
+    private ReconnectManager mReconnectManager;
 
     /**
      * 0-未连接
@@ -58,6 +45,7 @@ public class WebSocketThread extends Thread {
 
     public WebSocketThread(String connectUrl) {
         this.connectUrl = connectUrl;
+        mReconnectManager = new ReconnectManager(this);
     }
 
     @Override
@@ -66,29 +54,30 @@ public class WebSocketThread extends Thread {
         Looper.prepare();
         mHandler = new WebSocketHandler();
         quit = false;
-        if (threadStartListener != null) {
-            threadStartListener.started();
-        }
         Looper.loop();
     }
 
-    public Handler getHandler() {
+    Handler getHandler() {
         return mHandler;
     }
 
-    public void setSocketListener(SocketListener socketListener) {
-        this.mSocketListener = socketListener;
+    WebSocketClient getSocket() {
+        return mWebSocket;
     }
 
-    public void setThreadStartListener(ThreadStartListener threadStartListener) {
-        this.threadStartListener = threadStartListener;
+    void setSocketListener(SocketListener socketListener) {
+        this.mSocketListener = socketListener;
     }
 
     /**
      * 获取连接状态
      */
-    public int getConnectState() {
+    int getConnectState() {
         return connectStatus;
+    }
+
+    void reconnect(){
+        mReconnectManager.performReconnect();
     }
 
     private class WebSocketHandler extends Handler {
@@ -112,9 +101,12 @@ public class WebSocketThread extends Thread {
                     }
                     break;
                 case MessageType.SEND_MESSAGE:
-                    if (webSocket != null && msg.obj instanceof String) {
-                        if (webSocket.isConnecting() && !webSocket.isClosed()) {
+                    if (mWebSocket != null && msg.obj instanceof String) {
+                        if (mWebSocket.isConnecting() && !mWebSocket.isClosed()) {
                             send((String) msg.obj);
+                        } else if (mSocketListener != null) {
+                            mSocketListener.onTextMessage((String) msg.obj);
+                            mReconnectManager.performReconnect();
                         }
                     }
                     break;
@@ -125,11 +117,11 @@ public class WebSocketThread extends Thread {
             if (connectStatus == 0) {
                 connectStatus = 1;
                 try {
-                    if (webSocket == null) {
-                        webSocket = new WebSocketClient(new URI(connectUrl), new Draft_6455()) {
+                    if (mWebSocket == null) {
+                        mWebSocket = new WebSocketClient(new URI(connectUrl), new Draft_6455()) {
 
                             @Override
-                            public void onOpen(ServerHandshake handshakedata) {
+                            public void onOpen(ServerHandshake handShakeData) {
                                 connectStatus = 2;
                                 if (mSocketListener != null) {
                                     mSocketListener.onConnected();
@@ -148,6 +140,7 @@ public class WebSocketThread extends Thread {
                             @Override
                             public void onClose(int code, String reason, boolean remote) {
                                 connectStatus = 0;
+                                mReconnectManager.performReconnect();
                                 if (mSocketListener != null) {
                                     mSocketListener.onDisconnected();
                                 }
@@ -158,9 +151,9 @@ public class WebSocketThread extends Thread {
                                 ZLog.e(TAG, "WebSocketClient#onError(Exception)", ex);
                             }
                         };
-                        webSocket.connect();
+                        mWebSocket.connect();
                     } else {
-                        webSocket.reconnect();
+                        mWebSocket.reconnect();
                     }
                 } catch (URISyntaxException e) {
                     connectStatus = 0;
@@ -172,11 +165,17 @@ public class WebSocketThread extends Thread {
         private void disconnect() {
             if (connectStatus == 2) {
                 ZLog.d(TAG, "正在关闭WebSocket连接");
-                if (webSocket != null) {
-                    webSocket.close();
+                if (mWebSocket != null) {
+                    mWebSocket.close();
                 }
                 connectStatus = 0;
                 ZLog.d(TAG, "WebSocket连接已关闭");
+            }
+        }
+
+        private void send(String text) {
+            if (mWebSocket != null && mWebSocket.isConnecting() && !mWebSocket.isClosed()) {
+                mWebSocket.send(text);
             }
         }
 
@@ -185,19 +184,15 @@ public class WebSocketThread extends Thread {
          */
         private void quit() {
             disconnect();
-            webSocket = null;
+            mWebSocket = null;
+            mReconnectManager.destroy();
+            quit = true;
+            connectStatus = 0;
             Looper looper = Looper.myLooper();
             if (looper != null) {
                 looper.quit();
             }
-            quit = true;
-            connectStatus = 0;
-        }
-
-        private void send(String text) {
-            if (webSocket != null && webSocket.isConnecting() && !webSocket.isClosed()) {
-                webSocket.send(text);
-            }
+            WebSocketThread.this.interrupt();
         }
     }
 }
