@@ -97,7 +97,7 @@ public class WebSocketThread extends Thread {
                     break;
                 case MessageType.RECEIVE_MESSAGE:
                     if (mSocketListener != null && msg.obj instanceof String) {
-                        mSocketListener.onTextMessage((String) msg.obj);
+                        mSocketListener.onMessageResponse((String) msg.obj);
                     }
                     break;
                 case MessageType.SEND_MESSAGE:
@@ -105,7 +105,7 @@ public class WebSocketThread extends Thread {
                         if (mWebSocket.isConnecting() && !mWebSocket.isClosed()) {
                             send((String) msg.obj);
                         } else if (mSocketListener != null) {
-                            mSocketListener.onTextMessage((String) msg.obj);
+                            mSocketListener.onSendMessageError((String) msg.obj);
                             mReconnectManager.performReconnect();
                         }
                     }
