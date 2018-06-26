@@ -105,7 +105,11 @@ public class WebSocketThread extends Thread {
                         if (mWebSocket.isConnecting() && !mWebSocket.isClosed()) {
                             send((String) msg.obj);
                         } else if (mSocketListener != null) {
-                            mSocketListener.onSendMessageError((String) msg.obj);
+                            ErrorResponse errorResponse = new ErrorResponse();
+                            errorResponse.setErrorCode(1);
+                            errorResponse.setCause(new Throwable("WebSocket does not connect or closed!"));
+                            errorResponse.setRequestText((String) msg.obj);
+                            mSocketListener.onSendMessageError(errorResponse);
                             mReconnectManager.performReconnect();
                         }
                     }

@@ -14,16 +14,13 @@ import java.util.List;
  * WebSocket基础服务
  * Created by ZhangKe on 2018/6/13.
  */
-public abstract class BaseWebSocketService extends Service implements SocketListener {
-
-    /**
-     * 获取 WebSocket 连接地址
-     */
-    protected abstract String getConnectUrl();
+public class BaseWebSocketService extends Service implements SocketListener {
 
     private WebSocketThread mWebSocketThread;
 
-    private List<SocketListener> mSocketListenerList = new ArrayList<>();
+    private ResponseDelivery mResponseDelivery = new ResponseDelivery();
+
+    private IResponseDispatcher responseDispatcher;
 
     private BaseWebSocketService.ServiceBinder serviceBinder = new BaseWebSocketService.ServiceBinder();
 
@@ -45,9 +42,11 @@ public abstract class BaseWebSocketService extends Service implements SocketList
     @Override
     public void onCreate() {
         super.onCreate();
-        mWebSocketThread = new WebSocketThread(getConnectUrl());
+        mWebSocketThread = new WebSocketThread(WebSocketSetting.getConnectUrl());
         mWebSocketThread.setSocketListener(this);
         mWebSocketThread.start();
+
+        responseDispatcher = WebSocketSetting.getResponseProcessDelivery();
     }
 
     @Override
@@ -58,7 +57,11 @@ public abstract class BaseWebSocketService extends Service implements SocketList
 
     public void sendText(String text) {
         if (mWebSocketThread.getHandler() == null) {
-            onSendMessageError(text);
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.setErrorCode(10);
+            errorResponse.setCause(new Throwable("WebSocket does not initialization!"));
+            errorResponse.setRequestText(text);
+            onSendMessageError(errorResponse);
         } else {
             Message message = mWebSocketThread.getHandler().obtainMessage();
             message.obj = text;
@@ -68,55 +71,35 @@ public abstract class BaseWebSocketService extends Service implements SocketList
     }
 
     public void addListener(SocketListener listener) {
-        mSocketListenerList.add(listener);
+        mResponseDelivery.addListener(listener);
     }
 
     public void removeListener(SocketListener listener) {
-        mSocketListenerList.remove(listener);
+        mResponseDelivery.removeListener(listener);
     }
 
     @Override
     public void onConnected() {
-        if (!mSocketListenerList.isEmpty()) {
-            for (SocketListener listener : mSocketListenerList) {
-                listener.onConnected();
-            }
-        }
+        mResponseDelivery.onConnected();
     }
 
     @Override
     public void onConnectError(Throwable cause) {
-        if (!mSocketListenerList.isEmpty()) {
-            for (SocketListener listener : mSocketListenerList) {
-                listener.onConnectError(cause);
-            }
-        }
+        responseDispatcher.onConnectError(cause);
     }
 
     @Override
     public void onDisconnected() {
-        if (!mSocketListenerList.isEmpty()) {
-            for (SocketListener listener : mSocketListenerList) {
-                listener.onDisconnected();
-            }
-        }
+        responseDispatcher.onDisconnected();
     }
 
     @Override
     public void onMessageResponse(String message) {
-        if (!mSocketListenerList.isEmpty()) {
-            for (SocketListener listener : mSocketListenerList) {
-                listener.onMessageResponse(message);
-            }
-        }
+        responseDispatcher.onMessageResponse(message);
     }
 
     @Override
-    public void onSendMessageError(String message) {
-        if (!mSocketListenerList.isEmpty()) {
-            for (SocketListener listener : mSocketListenerList) {
-                listener.onSendMessageError(message);
-            }
-        }
+    public void onSendMessageError(ErrorResponse message) {
+        responseDispatcher.onSendMessageError(message);
     }
 }

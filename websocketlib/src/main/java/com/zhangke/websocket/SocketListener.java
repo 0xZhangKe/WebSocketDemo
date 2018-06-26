@@ -31,5 +31,5 @@ public interface SocketListener {
     /**
      * 消息发送失败或接受到错误消息等等
      */
-    void onSendMessageError(String error);
+    void onSendMessageError(ErrorResponse error);
 }

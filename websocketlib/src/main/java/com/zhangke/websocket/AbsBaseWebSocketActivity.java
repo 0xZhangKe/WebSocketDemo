@@ -65,7 +65,7 @@ public abstract class AbsBaseWebSocketActivity<T extends BaseWebSocketService> e
         }
 
         @Override
-        public void onSendMessageError(String error) {
+        public void onSendMessageError(ErrorResponse error) {
             AbsBaseWebSocketActivity.this.onSendMessageError(error);
         }
     };
@@ -81,7 +81,11 @@ public abstract class AbsBaseWebSocketActivity<T extends BaseWebSocketService> e
         if (webSocketServiceBindSuccess && mWebSocketService != null) {
             mWebSocketService.sendText(text);
         } else {
-            mSocketListener.onSendMessageError(text);
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.setErrorCode(2);
+            errorResponse.setCause(new Throwable("WebSocketService dose not bind!"));
+            errorResponse.setRequestText(text);
+            mSocketListener.onSendMessageError(errorResponse);
         }
     }
 
@@ -106,7 +110,7 @@ public abstract class AbsBaseWebSocketActivity<T extends BaseWebSocketService> e
 
     protected abstract void onMessageResponse(String message);
 
-    protected abstract void onSendMessageError(String error);
+    protected abstract void onSendMessageError(ErrorResponse error);
 
     /**
      * 绑定服务
