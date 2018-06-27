@@ -7,15 +7,19 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.zhangke.websocket.AbsBaseWebSocketActivity;
+import com.alibaba.fastjson.TypeReference;
+import com.zhangke.websocket.AbsWebSocketActivity;
+import com.zhangke.websocket.ErrorResponse;
+import com.zhangke.websocket.Response;
 
-public class LoginActivity extends AbsBaseWebSocketActivity<WebSocketService> {
+public class LoginActivity extends AbsWebSocketActivity {
 
     /**
      * 假设这是登陆的接口Path
      */
-    private static final String LOGIN_PATH = "path_login";
+    private static final String LOGIN_PATH = "Login";
 
     private EditText etAccount;
     private EditText etPassword;
@@ -49,22 +53,27 @@ public class LoginActivity extends AbsBaseWebSocketActivity<WebSocketService> {
     }
 
     private void login(String account, String password){
-        JSONObject param = new JSONObject();
-        param.put("account", account);
-        param.put("password", password);
-        param.put("path", LOGIN_PATH);
-        sendText(param.toString());
+        JSONObject params = new JSONObject();
+        JSONObject command = new JSONObject();
+        JSONObject parameters = new JSONObject();
+
+        command.put("path", LOGIN_PATH);
+
+        parameters.put("username", account);
+        parameters.put("password", password);
+
+        params.put("command", command);
+        params.put("parameters", parameters);
+        sendText(params.toJSONString());
     }
 
     @Override
-    protected void onMessageResponse(String message) {
-        if (TextUtils.isEmpty(message)) {
-            UiUtil.showToast(LoginActivity.this, "登陆成功");
-        }
+    protected void onMessageResponse(Response message) {
+        UiUtil.showToast(LoginActivity.this, "登陆成功: " + ((CommonResponse)message).getResponseEntity().getMsg());
     }
 
     @Override
-    protected void onSendMessageError(String error) {
-        UiUtil.showToast(LoginActivity.this, "登陆失败：%s");
+    protected void onSendMessageError(ErrorResponse error) {
+        UiUtil.showToast(LoginActivity.this, error.getDescription());
     }
 }

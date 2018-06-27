@@ -24,6 +24,7 @@
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
         android:layout_marginTop="10dp"
+        android:text="123456"
         android:inputType="textPassword"
         android:hint="input your password"
         android:lines="1" />
