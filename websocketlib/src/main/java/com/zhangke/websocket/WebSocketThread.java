@@ -14,7 +14,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * WebSocket线程
+ * WebSocket 线程，
+ * 负责 WebSocket 连接的建立，数据发送，监听数据等。
  * <p>
  * Created by ZhangKe on 2018/6/11.
  */
@@ -23,7 +24,7 @@ public class WebSocketThread extends Thread {
     private static final String TAG = "WebSocketLib";
 
     /**
-     * WebSocket链接地址
+     * WebSocket 连接地址
      */
     private String connectUrl;
 
@@ -43,7 +44,7 @@ public class WebSocketThread extends Thread {
      */
     private int connectStatus = 0;
 
-    public WebSocketThread(String connectUrl) {
+    WebSocketThread(String connectUrl) {
         this.connectUrl = connectUrl;
         mReconnectManager = new ReconnectManager(this);
     }

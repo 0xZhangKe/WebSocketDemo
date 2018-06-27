@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 消息发射器，
+ * 内部维护一个 {@link SocketListener} 的 List，
+ * 调用每一个方法都会通知 List 中所有的 Listener，
+ * 这么做主要为了简化代码。
  * Created by ZhangKe on 2018/6/26.
  */
 public class ResponseDelivery implements SocketListener {

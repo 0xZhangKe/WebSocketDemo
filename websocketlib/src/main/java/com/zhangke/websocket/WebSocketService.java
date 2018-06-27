@@ -67,10 +67,16 @@ public class WebSocketService extends Service implements SocketListener {
         }
     }
 
+    /**
+     * 添加一个 WebSocket 事件监听器
+     */
     public void addListener(SocketListener listener) {
         mResponseDelivery.addListener(listener);
     }
 
+    /**
+     * 移除一个 WebSocket 事件监听器
+     */
     public void removeListener(SocketListener listener) {
         mResponseDelivery.removeListener(listener);
     }

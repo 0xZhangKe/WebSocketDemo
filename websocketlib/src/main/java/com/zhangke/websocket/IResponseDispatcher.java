@@ -1,7 +1,8 @@
 package com.zhangke.websocket;
 
 /**
- * 用于处理及分发接收到的消息
+ * 用于处理及分发接收到的消息的接口，
+ * 如果需要自定义事件的分发，实现这个类并设置到{@link WebSocketSetting} 中即可。
  * Created by ZhangKe on 2018/6/26.
  */
 public interface IResponseDispatcher {
