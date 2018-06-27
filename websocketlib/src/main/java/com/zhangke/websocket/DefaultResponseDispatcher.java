@@ -4,7 +4,7 @@ package com.zhangke.websocket;
  * 通用消息调度器，没做任何数据处理
  * Created by ZhangKe on 2018/6/26.
  */
-public class CommonResponseDispatcher implements IResponseDispatcher {
+public class DefaultResponseDispatcher implements IResponseDispatcher {
 
     @Override
     public void onConnected(ResponseDelivery delivery) {

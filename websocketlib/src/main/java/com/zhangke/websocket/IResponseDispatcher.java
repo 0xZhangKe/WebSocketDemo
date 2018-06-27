@@ -26,6 +26,9 @@ public interface IResponseDispatcher {
 
     /**
      * 接收到消息
+     *
+     * @param message 接收到的消息
+     * @param delivery 消息发射器
      */
     void onMessageResponse(Response message, ResponseDelivery delivery);
 

@@ -29,7 +29,7 @@ public class WebSocketSetting {
      */
     public static IResponseDispatcher getResponseProcessDelivery() {
         if(responseProcessDelivery == null){
-            responseProcessDelivery = new CommonResponseDispatcher();
+            responseProcessDelivery = new DefaultResponseDispatcher();
         }
         return responseProcessDelivery;
     }
