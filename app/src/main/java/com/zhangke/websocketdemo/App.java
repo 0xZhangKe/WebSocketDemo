@@ -3,7 +3,6 @@ package com.zhangke.websocketdemo;
 import android.app.Application;
 import android.content.Intent;
 
-import com.zhangke.websocket.CommonResponseDispatcher;
 import com.zhangke.websocket.WebSocketService;
 import com.zhangke.websocket.WebSocketSetting;
 
