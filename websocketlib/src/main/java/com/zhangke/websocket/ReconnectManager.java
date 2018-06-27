@@ -1,8 +1,7 @@
 package com.zhangke.websocket;
 
 import android.os.Handler;
-
-import com.zhangke.zlog.ZLog;
+import android.util.Log;
 
 import org.java_websocket.client.WebSocketClient;
 
@@ -38,7 +37,7 @@ public class ReconnectManager {
      */
     synchronized void performReconnect() {
         if (retrying) {
-            ZLog.i(TAG, "正在重连，请勿重复调用。");
+            Log.i(TAG, "正在重连，请勿重复调用。");
         } else {
             retry();
         }
@@ -51,7 +50,7 @@ public class ReconnectManager {
                 @Override
                 public void run() {
                     retrying = true;
-                    for (int i = 0; i < 15; i++) {
+                    for (int i = 0; i < 20; i++) {
                         if (destroyed) {
                             retrying = false;
                             return;
@@ -59,8 +58,10 @@ public class ReconnectManager {
                         Handler handler = mWebSocketThread.getHandler();
                         WebSocketClient websocket = mWebSocketThread.getSocket();
                         if (handler != null && websocket != null) {
-                            if (websocket.isConnecting() && !websocket.isClosed()) {
+                            if (mWebSocketThread.getConnectState() == 2) {
                                 break;
+                            } else if (mWebSocketThread.getConnectState() == 1) {
+                                continue;
                             } else {
                                 handler.sendEmptyMessage(MessageType.CONNECT);
                             }
@@ -70,7 +71,7 @@ public class ReconnectManager {
                         try {
                             Thread.sleep(500);
                         } catch (InterruptedException e) {
-                            ZLog.e(TAG, "retry()", e);
+                            Log.e(TAG, "retry()", e);
                             if (destroyed = true) {
                                 retrying = false;
                                 return;

@@ -3,11 +3,11 @@ package com.zhangke.websocket;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-
-import com.zhangke.zlog.ZLog;
+import android.util.Log;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_6455;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
@@ -52,8 +52,9 @@ public class WebSocketThread extends Thread {
     public void run() {
         super.run();
         Looper.prepare();
-        mHandler = new WebSocketHandler();
         quit = false;
+        mHandler = new WebSocketHandler();
+        mHandler.sendEmptyMessage(MessageType.CONNECT);
         Looper.loop();
     }
 
@@ -76,7 +77,7 @@ public class WebSocketThread extends Thread {
         return connectStatus;
     }
 
-    void reconnect(){
+    void reconnect() {
         mReconnectManager.performReconnect();
     }
 
@@ -97,18 +98,19 @@ public class WebSocketThread extends Thread {
                     break;
                 case MessageType.RECEIVE_MESSAGE:
                     if (mSocketListener != null && msg.obj instanceof String) {
-                        mSocketListener.onMessageResponse((String) msg.obj);
+                        mSocketListener.onMessageResponse(new TextResponse((String) msg.obj));
                     }
                     break;
                 case MessageType.SEND_MESSAGE:
-                    if (mWebSocket != null && msg.obj instanceof String) {
-                        if (mWebSocket.isConnecting() && !mWebSocket.isClosed()) {
-                            send((String) msg.obj);
+                    if (msg.obj instanceof String) {
+                        String message = (String) msg.obj;
+                        if (mWebSocket != null && connectStatus == 2) {
+                            send(message);
                         } else if (mSocketListener != null) {
                             ErrorResponse errorResponse = new ErrorResponse();
                             errorResponse.setErrorCode(1);
                             errorResponse.setCause(new Throwable("WebSocket does not connect or closed!"));
-                            errorResponse.setRequestText((String) msg.obj);
+                            errorResponse.setRequestText(message);
                             mSocketListener.onSendMessageError(errorResponse);
                             mReconnectManager.performReconnect();
                         }
@@ -127,6 +129,7 @@ public class WebSocketThread extends Thread {
                             @Override
                             public void onOpen(ServerHandshake handShakeData) {
                                 connectStatus = 2;
+                                Log.d(TAG, "WebSocket 连接成功");
                                 if (mSocketListener != null) {
                                     mSocketListener.onConnected();
                                 }
@@ -135,6 +138,7 @@ public class WebSocketThread extends Thread {
                             @Override
                             public void onMessage(String message) {
                                 connectStatus = 2;
+                                Log.d(TAG, "WebSocket 接收到消息：" + message);
                                 Message msg = mHandler.obtainMessage();
                                 msg.what = MessageType.RECEIVE_MESSAGE;
                                 msg.obj = message;
@@ -144,42 +148,65 @@ public class WebSocketThread extends Thread {
                             @Override
                             public void onClose(int code, String reason, boolean remote) {
                                 connectStatus = 0;
-                                mReconnectManager.performReconnect();
+                                Log.d(TAG, "WebSocket 断开连接");
                                 if (mSocketListener != null) {
                                     mSocketListener.onDisconnected();
                                 }
+                                mReconnectManager.performReconnect();
                             }
 
                             @Override
                             public void onError(Exception ex) {
-                                ZLog.e(TAG, "WebSocketClient#onError(Exception)", ex);
+                                Log.e(TAG, "WebSocketClient#onError(Exception)", ex);
                             }
                         };
+                        Log.d(TAG, "WebSocket 开始连接...");
                         mWebSocket.connect();
                     } else {
+                        Log.d(TAG, "WebSocket 开始重新连接...");
                         mWebSocket.reconnect();
                     }
                 } catch (URISyntaxException e) {
                     connectStatus = 0;
-                    ZLog.e(TAG, "WebSocketThread$Handler#connect()", e);
+                    Log.d(TAG, "WebSocket 连接失败");
+                    if (mSocketListener != null) {
+                        mSocketListener.onConnectError(e);
+                    }
                 }
             }
         }
 
         private void disconnect() {
             if (connectStatus == 2) {
-                ZLog.d(TAG, "正在关闭WebSocket连接");
+                Log.d(TAG, "正在关闭WebSocket连接");
                 if (mWebSocket != null) {
                     mWebSocket.close();
                 }
                 connectStatus = 0;
-                ZLog.d(TAG, "WebSocket连接已关闭");
+                Log.d(TAG, "WebSocket连接已关闭");
             }
         }
 
         private void send(String text) {
-            if (mWebSocket != null && mWebSocket.isConnecting() && !mWebSocket.isClosed()) {
-                mWebSocket.send(text);
+            if (mWebSocket != null && connectStatus == 2) {
+                try {
+                    mWebSocket.send(text);
+                    Log.d(TAG, "数据发送成功：" + text);
+                } catch (WebsocketNotConnectedException e) {
+                    connectStatus = 0;
+                    Log.e(TAG, "send()" + text, e);
+                    Log.e(TAG, "连接已断开，数据发送失败：" + text, e);
+                    if (mSocketListener != null) {
+                        mSocketListener.onDisconnected();
+
+                        ErrorResponse errorResponse = new ErrorResponse();
+                        errorResponse.setErrorCode(1);
+                        errorResponse.setCause(new Throwable("WebSocket does not connected or closed!"));
+                        errorResponse.setRequestText(text);
+                        mSocketListener.onSendMessageError(errorResponse);
+                    }
+                    mReconnectManager.performReconnect();
+                }
             }
         }
 

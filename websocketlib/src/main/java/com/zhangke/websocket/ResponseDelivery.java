@@ -43,7 +43,7 @@ public class ResponseDelivery implements SocketListener {
     }
 
     @Override
-    public void onMessageResponse(String message) {
+    public void onMessageResponse(Response message) {
         for (SocketListener listener : mSocketListenerList) {
             listener.onMessageResponse(message);
         }

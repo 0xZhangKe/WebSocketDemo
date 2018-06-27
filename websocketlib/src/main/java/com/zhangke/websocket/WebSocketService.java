@@ -7,14 +7,11 @@ import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * WebSocket基础服务
  * Created by ZhangKe on 2018/6/13.
  */
-public class BaseWebSocketService extends Service implements SocketListener {
+public class WebSocketService extends Service implements SocketListener {
 
     private WebSocketThread mWebSocketThread;
 
@@ -22,11 +19,11 @@ public class BaseWebSocketService extends Service implements SocketListener {
 
     private IResponseDispatcher responseDispatcher;
 
-    private BaseWebSocketService.ServiceBinder serviceBinder = new BaseWebSocketService.ServiceBinder();
+    private WebSocketService.ServiceBinder serviceBinder = new WebSocketService.ServiceBinder();
 
     public class ServiceBinder extends Binder {
-        public BaseWebSocketService getService() {
-            return BaseWebSocketService.this;
+        public WebSocketService getService() {
+            return WebSocketService.this;
         }
     }
 
@@ -34,7 +31,7 @@ public class BaseWebSocketService extends Service implements SocketListener {
     @Override
     public IBinder onBind(Intent intent) {
         if (serviceBinder == null) {
-            serviceBinder = new BaseWebSocketService.ServiceBinder();
+            serviceBinder = new WebSocketService.ServiceBinder();
         }
         return serviceBinder;
     }
@@ -58,7 +55,7 @@ public class BaseWebSocketService extends Service implements SocketListener {
     public void sendText(String text) {
         if (mWebSocketThread.getHandler() == null) {
             ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.setErrorCode(10);
+            errorResponse.setErrorCode(3);
             errorResponse.setCause(new Throwable("WebSocket does not initialization!"));
             errorResponse.setRequestText(text);
             onSendMessageError(errorResponse);
@@ -80,26 +77,26 @@ public class BaseWebSocketService extends Service implements SocketListener {
 
     @Override
     public void onConnected() {
-        mResponseDelivery.onConnected();
+        responseDispatcher.onConnected(mResponseDelivery);
     }
 
     @Override
     public void onConnectError(Throwable cause) {
-        responseDispatcher.onConnectError(cause);
+        responseDispatcher.onConnectError(cause, mResponseDelivery);
     }
 
     @Override
     public void onDisconnected() {
-        responseDispatcher.onDisconnected();
+        responseDispatcher.onDisconnected(mResponseDelivery);
     }
 
     @Override
-    public void onMessageResponse(String message) {
-        responseDispatcher.onMessageResponse(message);
+    public void onMessageResponse(Response message) {
+        responseDispatcher.onMessageResponse(message, mResponseDelivery);
     }
 
     @Override
     public void onSendMessageError(ErrorResponse message) {
-        responseDispatcher.onSendMessageError(message);
+        responseDispatcher.onSendMessageError(message, mResponseDelivery);
     }
 }

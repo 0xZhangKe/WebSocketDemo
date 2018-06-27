@@ -1,13 +1,13 @@
 package com.zhangke.websocket;
 
 /**
+ * WebSocket 使用配置
  * Created by ZhangKe on 2018/6/26.
  */
 public class WebSocketSetting {
 
     private static String connectUrl;
-    private static Class genericType;
-    private static IResponseDispatcher responseProcessDelivery = new CommonResponseDispacther();
+    private static IResponseDispatcher responseProcessDelivery;
 
     /**
      * 获取 WebSocket 链接地址
@@ -25,23 +25,18 @@ public class WebSocketSetting {
     }
 
     /**
-     * 获取响应数据转换为对象的泛型类型
+     * 获取当前已设置的消息分发器
      */
-    public static Class getGenericType() {
-        return genericType;
-    }
-
-    /**
-     * 设置响应数据转换为对象的泛型类型
-     */
-    public static void setGenericType(Class genericType) {
-        WebSocketSetting.genericType = genericType;
-    }
-
     public static IResponseDispatcher getResponseProcessDelivery() {
+        if(responseProcessDelivery == null){
+            responseProcessDelivery = new CommonResponseDispatcher();
+        }
         return responseProcessDelivery;
     }
 
+    /**
+     * 设置消息分发器
+     */
     public static void setResponseProcessDelivery(IResponseDispatcher responseProcessDelivery) {
         WebSocketSetting.responseProcessDelivery = responseProcessDelivery;
     }

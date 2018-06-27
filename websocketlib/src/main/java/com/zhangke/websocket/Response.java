@@ -4,29 +4,13 @@ package com.zhangke.websocket;
  * WebSocket 响应数据
  * Created by ZhangKe on 2018/6/26.
  */
-public class Response<T> {
+public interface Response<T> {
 
-    private String responseText;
-    private T responseEntity;
+    String getResponseText();
 
-    public Response(String responseText, T responseEntity) {
-        this.responseText = responseText;
-        this.responseEntity = responseEntity;
-    }
+    void setResponseText(String responseText);
 
-    public String getResponseText() {
-        return responseText;
-    }
+    T getResponseEntity();
 
-    public void setResponseText(String responseText) {
-        this.responseText = responseText;
-    }
-
-    public T getResponseEntity() {
-        return responseEntity;
-    }
-
-    public void setResponseEntity(T responseEntity) {
-        this.responseEntity = responseEntity;
-    }
+    void setResponseEntity(T responseEntity);
 }

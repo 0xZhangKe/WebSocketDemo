@@ -26,7 +26,7 @@ public interface SocketListener {
     /**
      * 接收到消息
      */
-    void onMessageResponse(String message);
+    void onMessageResponse(Response message);
 
     /**
      * 消息发送失败或接受到错误消息等等
