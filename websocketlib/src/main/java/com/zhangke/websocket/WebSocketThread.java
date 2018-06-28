@@ -3,6 +3,7 @@ package com.zhangke.websocket;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.java_websocket.client.WebSocketClient;
@@ -125,6 +126,9 @@ public class WebSocketThread extends Thread {
                 connectStatus = 1;
                 try {
                     if (mWebSocket == null) {
+                        if(TextUtils.isEmpty(WebSocketSetting.getConnectUrl())){
+                            throw new RuntimeException("WebSocket connect url is empty!");
+                        }
                         mWebSocket = new WebSocketClient(new URI(connectUrl), new Draft_6455()) {
 
                             @Override

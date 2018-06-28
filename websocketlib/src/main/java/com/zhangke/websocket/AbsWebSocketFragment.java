@@ -7,28 +7,28 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.Fragment;
 import android.util.Log;
-
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 /**
- * 已经绑定了 WebSocketService 服务的 Activity，
- * <p>
- * Created by ZhangKe on 2018/6/25.
+ * 绑定了 WebSocketService 的抽象 Fragment
+ * Created by ZhangKe on 2018/6/28.
  */
-public abstract class AbsWebSocketActivity extends AppCompatActivity implements IWebSocketPage {
+public abstract class AbsWebSocketFragment extends Fragment implements IWebSocketPage {
 
-    private static final String TAG = "AbsWebSocketActivity";
+    private static final String TAG = "AbsWebSocketFragment";
 
     private WebSocketServiceConnectManager mConnectManager;
 
+    @Nullable
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mConnectManager = new WebSocketServiceConnectManager(this, this);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        mConnectManager = new WebSocketServiceConnectManager(getActivity().getApplicationContext(), this);
         mConnectManager.onCreate();
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     @Override
@@ -71,11 +71,8 @@ public abstract class AbsWebSocketActivity extends AppCompatActivity implements 
     }
 
     @Override
-    protected void onPause() {
-        if (isFinishing()) {
-            mConnectManager.onDestroy();
-        }
-        super.onPause();
+    public void onDestroy() {
+        mConnectManager.onDestroy();
+        super.onDestroy();
     }
-
 }
