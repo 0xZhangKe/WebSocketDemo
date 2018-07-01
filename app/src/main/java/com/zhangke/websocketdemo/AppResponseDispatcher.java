@@ -38,8 +38,9 @@ public class AppResponseDispatcher implements IResponseDispatcher {
     @Override
     public void onMessageResponse(Response message, ResponseDelivery delivery) {
         try {
-            CommonResponse commonResponse = new CommonResponse(message.getResponseText(), JSON.parseObject(message.getResponseText(), new TypeReference<CommonResponseEntity>() {
-            }));
+            CommonResponseEntity responseEntity = JSON.parseObject(message.getResponseText(), new TypeReference<CommonResponseEntity>() {
+            });
+            CommonResponse commonResponse = new CommonResponse(message.getResponseText(), responseEntity);
             if (commonResponse.getResponseEntity().getCode() >= 1000) {
                 delivery.onMessageResponse(commonResponse);
             } else {
@@ -47,6 +48,8 @@ public class AppResponseDispatcher implements IResponseDispatcher {
                 errorResponse.setErrorCode(12);
                 errorResponse.setDescription(commonResponse.getResponseEntity().getMsg());
                 errorResponse.setResponseText(message.getResponseText());
+                //将已经解析好的 CommonResponseEntity 独享保存起来以便后面使用
+                errorResponse.setReserved(responseEntity);
                 onSendMessageError(errorResponse, delivery);
             }
         } catch (JSONException e) {

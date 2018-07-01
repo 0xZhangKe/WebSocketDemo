@@ -6,17 +6,17 @@ package com.zhangke.websocketdemo;
  */
 public class CommonResponseEntity {
 
-    private String msg;
+    private String message;
     private String data;
-    private int code;//10开头成功
-    private CommandBean command;
+    private int code;
+    private String path;
 
-    public String getMsg() {
-        return msg;
+    public String getMessage() {
+        return message;
     }
 
-    public void setMsg(String msg) {
-        this.msg = msg;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public String getData() {
@@ -35,36 +35,11 @@ public class CommonResponseEntity {
         this.code = code;
     }
 
-    public CommandBean getCommand() {
-        return command;
+    public String getPath() {
+        return path;
     }
 
-    public void setCommand(CommandBean command) {
-        this.command = command;
-    }
-
-    public static class CommandBean {
-        /**
-         * path : employee.consumer.Login
-         */
-
-        private String path;
-        private String unique;
-
-        public String getPath() {
-            return path;
-        }
-
-        public void setPath(String path) {
-            this.path = path;
-        }
-
-        public String getUnique() {
-            return unique;
-        }
-
-        public void setUnique(String unique) {
-            this.unique = unique;
-        }
+    public void setPath(String path) {
+        this.path = path;
     }
 }
