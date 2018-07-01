@@ -7,4 +7,5 @@ public interface IWebSocketPage extends SocketListener {
 
     void onServiceBindSuccess();
     void sendText(String text);
+    void reconnect();//重新连接 WebSocket
 }

@@ -1,17 +1,8 @@
 package com.zhangke.websocket;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 
 /**
  * 已经绑定了 WebSocketService 服务的 Activity，
@@ -20,7 +11,7 @@ import java.lang.reflect.Type;
  */
 public abstract class AbsWebSocketActivity extends AppCompatActivity implements IWebSocketPage {
 
-    private static final String TAG = "AbsWebSocketActivity";
+    protected final String LOGTAG = this.getClass().getSimpleName();
 
     private WebSocketServiceConnectManager mConnectManager;
 
@@ -36,8 +27,13 @@ public abstract class AbsWebSocketActivity extends AppCompatActivity implements 
         mConnectManager.sendText(text);
     }
 
+    @Override
+    public void reconnect() {
+        mConnectManager.reconnect();
+    }
+
     /**
-     * 服务绑定成功时的回调，可以再次初始化数据
+     * 服务绑定成功时的回调，可以在此初始化数据
      */
     @Override
     public void onServiceBindSuccess() {

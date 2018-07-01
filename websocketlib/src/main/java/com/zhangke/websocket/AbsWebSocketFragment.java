@@ -1,14 +1,8 @@
 package com.zhangke.websocket;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +12,8 @@ import android.view.ViewGroup;
  * Created by ZhangKe on 2018/6/28.
  */
 public abstract class AbsWebSocketFragment extends Fragment implements IWebSocketPage {
+
+    protected final String LOGTAG = this.getClass().getSimpleName();
 
     private static final String TAG = "AbsWebSocketFragment";
 
@@ -36,8 +32,13 @@ public abstract class AbsWebSocketFragment extends Fragment implements IWebSocke
         mConnectManager.sendText(text);
     }
 
+    @Override
+    public void reconnect() {
+        mConnectManager.reconnect();
+    }
+
     /**
-     * 服务绑定成功时的回调，可以再次初始化数据
+     * 服务绑定成功时的回调，可以在此初始化数据
      */
     @Override
     public void onServiceBindSuccess() {

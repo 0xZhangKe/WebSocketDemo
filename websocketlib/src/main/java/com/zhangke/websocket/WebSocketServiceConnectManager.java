@@ -23,7 +23,7 @@ public class WebSocketServiceConnectManager {
     /**
      * WebSocket 服务是否绑定成功
      */
-    private boolean webSocketServiceBindSuccess = false;
+    private boolean webSocketServiceBindSuccess;
     protected WebSocketService mWebSocketService;
 
     protected ServiceConnection mWebSocketServiceConnection = new ServiceConnection() {
@@ -114,6 +114,14 @@ public class WebSocketServiceConnectManager {
             errorResponse.setCause(new Throwable("WebSocketService dose not bind!"));
             errorResponse.setRequestText(text);
             mSocketListener.onSendMessageError(errorResponse);
+        }
+    }
+
+    public void reconnect(){
+        if(mWebSocketService == null){
+            mSocketListener.onConnectError(new Throwable("WebSocket dose not ready"));
+        }else{
+            mWebSocketService.reconnect();
         }
     }
 

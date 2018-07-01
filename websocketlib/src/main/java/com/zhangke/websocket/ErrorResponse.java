@@ -13,7 +13,7 @@ public class ErrorResponse {
      * 11-数据获取成功，但是解析 JSON 失败
      * 12-数据获取成功，但是服务器返回数据中的code值不正确
      */
-    private int errorCode = 0;
+    private int errorCode;
     /**
      * 错误原因
      */
@@ -30,6 +30,11 @@ public class ErrorResponse {
      * 错误描述，客户端可以通过这个字段来设置统一的错误提示等等
      */
     private String description;
+
+    /**
+     * 保留字段，可以自定义存放任意数据
+     */
+    private Object reserved;
 
     public ErrorResponse() {
     }
@@ -86,5 +91,13 @@ public class ErrorResponse {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Object getReserved() {
+        return reserved;
+    }
+
+    public void setReserved(Object reserved) {
+        this.reserved = reserved;
     }
 }
