@@ -479,9 +479,22 @@ onMessageResponse 及 onSendMessageError 方法中的 Response 和 ErrorResponse
 ### 重连机制
 连接断开后会自动重连 20 次，每次间隔 500 毫秒。也可以通过监听网络连接变化自动重连，这部分我已经写好了，配置一下既可。
 ```java
-
+WebSocketSetting.setReconnectWithNetworkChanged(true);
 ```
+跟上面说的一样，这个也要在启动 WebSocketService 之前调用。
+
 好了关于如何配置及使用差不多就这样了，如果还有哪里不清楚的随时可以问我哦，下面在介绍的是其中的原理，不想看的可以直接跳过。
 
 ## 原理
+关于原理我就大概的介绍一下，也没有太多的代码，细节部分我就不说了，先说一下设计。
+
+在整个框架中的核心就是 [WebSocketThread](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/WebSocketThread.java) 线程，其内部采用的是消息驱动型的设计，使用 Looper.loop() 开启消息循环，其他模块将 WebSocket 的所有操作（消息发送、连接、断开等等）封装成消息的形式发送到该线程。
+Service 在创建一个 WebSocketThread 对象后通过获取该线程的 Handler 来向其发送控制信息。
+关于重连模块使用的是一个单独的类 [ReconnectManager](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/ReconnectManager.java) 来控制，其内部也持有一个 WebSocketThread 对象，当触发重连事件时通过 Handler 发送连接消息既可。
+WebSocket 中的各种事件（连接成功、接收到消息等等）通过监听器 [SocketListener](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/SocketListener.java) 通知 Service。
+
+我们来看一下流程图：
+
+
+
 

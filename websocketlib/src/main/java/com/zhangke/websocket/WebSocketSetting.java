@@ -8,6 +8,7 @@ public class WebSocketSetting {
 
     private static String connectUrl;
     private static IResponseDispatcher responseProcessDelivery;
+    private static boolean reconnectWithNetworkChanged;
 
     /**
      * 获取 WebSocket 链接地址
@@ -28,7 +29,7 @@ public class WebSocketSetting {
      * 获取当前已设置的消息分发器
      */
     public static IResponseDispatcher getResponseProcessDelivery() {
-        if(responseProcessDelivery == null){
+        if (responseProcessDelivery == null) {
             responseProcessDelivery = new DefaultResponseDispatcher();
         }
         return responseProcessDelivery;
@@ -39,5 +40,18 @@ public class WebSocketSetting {
      */
     public static void setResponseProcessDelivery(IResponseDispatcher responseProcessDelivery) {
         WebSocketSetting.responseProcessDelivery = responseProcessDelivery;
+    }
+
+    public static boolean isReconnectWithNetworkChanged() {
+        return reconnectWithNetworkChanged;
+    }
+
+    /**
+     * 设置网络连接变化后是否自动重连。</br>
+     * 如果设置 true 则需要注册广播：{@link NetworkChangedReceiver}，</br>
+     * 并添加 ACCESS_NETWORK_STATE 权限。
+     */
+    public static void setReconnectWithNetworkChanged(boolean reconnectWithNetworkChanged) {
+        WebSocketSetting.reconnectWithNetworkChanged = reconnectWithNetworkChanged;
     }
 }

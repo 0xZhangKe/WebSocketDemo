@@ -2,6 +2,7 @@ package com.zhangke.websocket;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.Message;
@@ -18,6 +19,15 @@ public class WebSocketService extends Service implements SocketListener {
     private ResponseDelivery mResponseDelivery = new ResponseDelivery();
 
     private IResponseDispatcher responseDispatcher;
+
+    /**
+     * 监听网络变化广播是否已注册
+     */
+    private boolean networkChangedReceiverRegist = false;
+    /**
+     * 监听网络变化
+     */
+    private NetworkChangedReceiver networkChangedReceiver;
 
     private WebSocketService.ServiceBinder serviceBinder = new WebSocketService.ServiceBinder();
 
@@ -44,11 +54,23 @@ public class WebSocketService extends Service implements SocketListener {
         mWebSocketThread.start();
 
         responseDispatcher = WebSocketSetting.getResponseProcessDelivery();
+
+        if (WebSocketSetting.isReconnectWithNetworkChanged()) {
+            networkChangedReceiver = new NetworkChangedReceiver(this);
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(Intent.ACTION_SCREEN_OFF);
+            filter.addAction(Intent.ACTION_SCREEN_ON);
+            registerReceiver(networkChangedReceiver, filter);
+            networkChangedReceiverRegist = true;
+        }
     }
 
     @Override
     public void onDestroy() {
         mWebSocketThread.getHandler().sendEmptyMessage(MessageType.QUIT);
+        if (networkChangedReceiverRegist && networkChangedReceiver != null) {
+            unregisterReceiver(networkChangedReceiver);
+        }
         super.onDestroy();
     }
 
@@ -84,7 +106,7 @@ public class WebSocketService extends Service implements SocketListener {
     /**
      * 连接 WebSocket
      */
-    public void reconnect(){
+    public void reconnect() {
         if (mWebSocketThread.getHandler() == null) {
             onConnectError(new Throwable("WebSocket dose not ready"));
         } else {
