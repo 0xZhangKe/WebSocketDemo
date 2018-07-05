@@ -3,6 +3,7 @@
     package="com.zhangke.websocketdemo">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
         android:name=".App"
@@ -21,6 +22,7 @@
         </activity>
 
         <service android:name="com.zhangke.websocket.WebSocketService"/>
+        <receiver android:name="com.zhangke.websocket.NetworkChangedReceiver"/>
 
     </application>
 

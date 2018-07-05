@@ -46,7 +46,7 @@ public class AppResponseDispatcher implements IResponseDispatcher {
             } else {
                 ErrorResponse errorResponse = new ErrorResponse();
                 errorResponse.setErrorCode(12);
-                errorResponse.setDescription(commonResponse.getResponseEntity().getMsg());
+                errorResponse.setDescription(commonResponse.getResponseEntity().getMessage());
                 errorResponse.setResponseText(message.getResponseText());
                 //将已经解析好的 CommonResponseEntity 独享保存起来以便后面使用
                 errorResponse.setReserved(responseEntity);
