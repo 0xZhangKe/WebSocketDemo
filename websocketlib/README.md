@@ -1,12 +1,11 @@
-## WebSocketDemo
- WebSocket 安卓客户端代码封装，简化使用。
-
 ## 介绍
-1.0版本在使用了一段时间之后逐渐发现了一些问题，一直想改也没时间，正好最近公司业务比较少，就趁着这段时间有空闲把代码优化了一下，其实差不多是重新做一套了。
+关于 WebSocket Android 端的使用封装之前已经做过一次了，但在使用了一段时间之后逐渐发现了一些问题，一直想改也没时间，正好最近公司业务比较少，就趁着这段时间有空闲把代码优化了一下，其实差不多是重新做一套了。
 这个版本的使用方式上比之前简化了很多，集成起来也更容易，并且代码逻辑更加清晰，模块与模块之间的耦合降到最低，运行效率更高，更健壮，好了废话不说了，先介绍一下使用方式。
 
 ## 如何使用
-首先将代码集成到自己的项目中，有两种集成方式，第一种是使用 Gradle 依赖这个项目既可，第二种把代码拷贝到自己项目中，我建议使用第二种方式，这样你觉得有什么问题自己改起来比较方便，当然了也可以直接给我[提 issue ](https://github.com/0xZhangKe/WebSocketDemo/issues/new)我来改。
+先放上 Github 地址：
+https://github.com/0xZhangKe/WebSocketDemo
+好了，首先将代码集成到自己的项目中，这里有两种集成方式，第一种是使用 Gradle 依赖这个项目既可，第二种把代码拷贝到自己项目中，我建议使用第二种方式，这样你觉得有什么问题自己改起来比较方便，当然了也可以直接给我[提 issue ](https://github.com/0xZhangKe/WebSocketDemo/issues/new)我来改。
 ### 集成
 #### Gradle 方式集成
 在对应 model 的  build.gradle 中添加依赖：
@@ -21,7 +20,7 @@ Failed to resolve: com.github.0xZhangKe:WebSocketDemo:2.0
 ```gradle
 maven { url = 'https://jitpack.io' }
 ```
-然后重新编译一下即可。
+然后 sync 一下即可。
 #### 第二种集成方式
 这个就很简单了，直接把 websocketlib 中的代码拷贝到自己的项目中就行，具体怎么做就看你的个人喜好。
 
@@ -477,7 +476,7 @@ public void onSendMessageError(ErrorResponse error);//消息发送失败或接�
 ```
 onMessageResponse 及 onSendMessageError 方法中的 Response 和 ErrorResponse 参数上面已经介绍过了，另外还有一个 onServiceBindSuccess 方法，表示服务绑定成功，可以开始发送数据了。
 ### 重连机制
-连接断开后会自动重连 20 次，每次间隔 500 毫秒。也可以通过监听网络连接变化自动重连，这部分我已经写好了，配置一下既可。
+连接断开后会自动重连 20 次，每次间隔 500 毫秒。也可以通过监听网络连接变化自动重连，这部分我已经写好了，配置一下既可开启。
 ```java
 WebSocketSetting.setReconnectWithNetworkChanged(true);
 ```
@@ -491,8 +490,7 @@ WebSocketSetting.setReconnectWithNetworkChanged(true);
 在整个框架中的核心就是 [WebSocketThread](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/WebSocketThread.java) 线程，其内部采用的是消息驱动型的设计，使用 Looper.loop() 开启消息循环，其他模块将 WebSocket 的所有操作（消息发送、连接、断开等等）封装成消息的形式发送到该线程。
 
 我们来看一下流程图：
-
-<image src="http://otp9vas7i.bkt.clouddn.com/websocketthread.png" gravy="center"/>
+![流程图](http://otp9vas7i.bkt.clouddn.com/websocketthread.png)
 
 Service 在创建一个 WebSocketThread 对象后通过获取该线程的 Handler 来向其发送控制信息。
 关于重连模块使用的是一个单独的类 [ReconnectManager](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/ReconnectManager.java) 来管理，其内部也持有一个 WebSocketThread 对象，当触发重连事件时通过 Handler 发送连接消息既可。
@@ -500,8 +498,9 @@ WebSocket 中的各种事件（连接成功、接收到消息等等）通过监�
 
 WebSocketThread 讲完了我在讲一下 WebSocketService ，也是比较重要，先看图：
 
-<image src="http://otp9vas7i.bkt.clouddn.com/websocketservice.jpg">
+![WebSocketService ](http://otp9vas7i.bkt.clouddn.com/websocketservice.jpg)
 
 上图描述了 WebSocket 事件从 WebSocketThread 到 WebSocketService 再到 Activity/Fragment 的事件流向，WebSocketService 中通过一个 IResponseDispatcher 接口来分发事件，默认实现为 DefaultResponseDispatcher ，不做任何处理，直接发送到下游，也可以自己实现从而实现数据拦截、转换等操作。
 
 
+好了就说到这里了，具体的一些细节直接看代码就行，还是很清晰的，要是有什么疑问直接问我也行。
