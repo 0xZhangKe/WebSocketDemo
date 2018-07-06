@@ -58,8 +58,9 @@ public class WebSocketService extends Service implements SocketListener {
         if (WebSocketSetting.isReconnectWithNetworkChanged()) {
             networkChangedReceiver = new NetworkChangedReceiver(this);
             IntentFilter filter = new IntentFilter();
-            filter.addAction(Intent.ACTION_SCREEN_OFF);
-            filter.addAction(Intent.ACTION_SCREEN_ON);
+            filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+            filter.addAction("android.net.wifi.WIFI_STATE_CHANGED");
+            filter.addAction("android.net.wifi.STATE_CHANGE");
             registerReceiver(networkChangedReceiver, filter);
             networkChangedReceiverRegist = true;
         }
