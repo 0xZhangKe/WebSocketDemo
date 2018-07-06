@@ -35,7 +35,7 @@ WebSocketSetting.setConnectUrl("Your WebSocket connect url");
 ### 配置统一的消息处理器
 在我们实际开发中可能需要考虑更多的问题，比如数据格式的统一规划，后台返回数据的统一处理，处理完成后再发送到下游等等。
 
-机智的我早就想到了解决方案，本项目中使用[IResponseDispatcher](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/IResponseDispatcher.java)来分发数据，可以看到这是个接口，默认会使用[DefaultResponseDispatcher](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/DefaultResponseDispatcher.java)来当做消息分发器，如果不进行设置 WebSocket 接收到数据后会直接发送给下游。
+机智的我早就想到了解决方案，本项目中使用 [IResponseDispatcher](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/IResponseDispatcher.java) 来分发数据，可以看到这是个接口，默认会使用 [DefaultResponseDispatcher](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/DefaultResponseDispatcher.java) 来当做消息分发器，如果不进行设置 WebSocket 接收到数据后会直接发送给下游。
 
 那么我们先来看一下 IResponseDispatcher：
 ```java
