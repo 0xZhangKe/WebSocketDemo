@@ -10,7 +10,7 @@
 ```gradle
 implementation 'com.github.0xZhangKe:WebSocketDemo:2.0'
 ```
-然后编译一下，如果出现类似的错误：
+然后 sync 一下，如果出现类似的错误：
 ```
 Failed to resolve: com.github.0xZhangKe:WebSocketDemo:2.0
 ```
@@ -18,7 +18,6 @@ Failed to resolve: com.github.0xZhangKe:WebSocketDemo:2.0
 ```gradle
 maven { url = 'https://jitpack.io' }
 ```
-然后 sync 一下即可。
 #### 第二种集成方式
 这个就很简单了，直接把 websocketlib 中的代码拷贝到自己的项目中就行，具体怎么做就看你的个人喜好。
 
