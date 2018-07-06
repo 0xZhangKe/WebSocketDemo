@@ -24,7 +24,7 @@ public class ReconnectManager {
      */
     private volatile boolean retrying;
     private volatile boolean destroyed;
-    private ExecutorService singleThreadPool = Executors.newSingleThreadExecutor();
+    private final ExecutorService singleThreadPool = Executors.newSingleThreadExecutor();
 
     ReconnectManager(WebSocketThread mWebSocketThread) {
         this.mWebSocketThread = mWebSocketThread;
@@ -43,46 +43,51 @@ public class ReconnectManager {
         }
     }
 
+    /**
+     * 开始重连
+     */
     private synchronized void retry() {
         if (!retrying) {
             retrying = true;
-            singleThreadPool.execute(new Runnable() {
-                @Override
-                public void run() {
-                    retrying = true;
-                    for (int i = 0; i < 20; i++) {
-                        if (destroyed) {
-                            retrying = false;
-                            return;
-                        }
-                        Handler handler = mWebSocketThread.getHandler();
-                        WebSocketClient websocket = mWebSocketThread.getSocket();
-                        if (handler != null && websocket != null) {
-                            if (mWebSocketThread.getConnectState() == 2) {
-                                break;
-                            } else if (mWebSocketThread.getConnectState() == 1) {
-                                continue;
-                            } else {
-                                handler.sendEmptyMessage(MessageType.CONNECT);
-                            }
-                        } else {
-                            break;
-                        }
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            Log.e(TAG, "retry()", e);
-                            if (destroyed = true) {
+            synchronized (singleThreadPool) {
+                singleThreadPool.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        retrying = true;
+                        for (int i = 0; i < 20; i++) {
+                            if (destroyed) {
                                 retrying = false;
                                 return;
+                            }
+                            Handler handler = mWebSocketThread.getHandler();
+                            WebSocketClient websocket = mWebSocketThread.getSocket();
+                            if (handler != null && websocket != null) {
+                                if (mWebSocketThread.getConnectState() == 2) {
+                                    break;
+                                } else if (mWebSocketThread.getConnectState() == 1) {
+                                    continue;
+                                } else {
+                                    handler.sendEmptyMessage(MessageType.CONNECT);
+                                }
                             } else {
-                                Thread.currentThread().interrupt();
+                                break;
+                            }
+                            try {
+                                Thread.sleep(500);
+                            } catch (InterruptedException e) {
+                                Log.e(TAG, "retry()", e);
+                                if (destroyed = true) {
+                                    retrying = false;
+                                    return;
+                                } else {
+                                    Thread.currentThread().interrupt();
+                                }
                             }
                         }
+                        retrying = false;
                     }
-                    retrying = false;
-                }
-            });
+                });
+            }
         }
     }
 
@@ -93,7 +98,6 @@ public class ReconnectManager {
         destroyed = true;
         if (singleThreadPool != null) {
             singleThreadPool.shutdownNow();
-            singleThreadPool = null;
         }
         mWebSocketThread = null;
     }

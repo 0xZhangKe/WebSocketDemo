@@ -10,6 +10,7 @@ import android.os.Looper;
 import android.util.Log;
 
 /**
+ * 负责页面的 WebSocketService 绑定等操作
  * Created by ZhangKe on 2018/6/28.
  */
 public class WebSocketServiceConnectManager {
@@ -100,12 +101,12 @@ public class WebSocketServiceConnectManager {
         webSocketServiceBindSuccess = false;
     }
 
-    public void onCreate(){
+    public void onCreate() {
         Intent intent = new Intent(context, WebSocketService.class);
         context.bindService(intent, mWebSocketServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
-    public void sendText(String text){
+    public void sendText(String text) {
         if (webSocketServiceBindSuccess && mWebSocketService != null) {
             mWebSocketService.sendText(text);
         } else {
@@ -117,15 +118,15 @@ public class WebSocketServiceConnectManager {
         }
     }
 
-    public void reconnect(){
-        if(mWebSocketService == null){
+    public void reconnect() {
+        if (mWebSocketService == null) {
             mSocketListener.onConnectError(new Throwable("WebSocket dose not ready"));
-        }else{
+        } else {
             mWebSocketService.reconnect();
         }
     }
 
-    public void onDestroy(){
+    public void onDestroy() {
         context.unbindService(mWebSocketServiceConnection);
         webSocketServiceBindSuccess = false;
         mWebSocketService.removeListener(mSocketListener);

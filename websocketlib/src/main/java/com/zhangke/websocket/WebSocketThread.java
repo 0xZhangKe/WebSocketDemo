@@ -60,26 +60,29 @@ public class WebSocketThread extends Thread {
         Looper.loop();
     }
 
-    Handler getHandler() {
+    /**
+     * 获取控制 WebSocketThread 的 Handler
+     */
+    public Handler getHandler() {
         return mHandler;
     }
 
-    WebSocketClient getSocket() {
+    public WebSocketClient getSocket() {
         return mWebSocket;
     }
 
-    void setSocketListener(SocketListener socketListener) {
+    public void setSocketListener(SocketListener socketListener) {
         this.mSocketListener = socketListener;
     }
 
     /**
      * 获取连接状态
      */
-    int getConnectState() {
+    public int getConnectState() {
         return connectStatus;
     }
 
-    void reconnect() {
+    public void reconnect() {
         mReconnectManager.performReconnect();
     }
 

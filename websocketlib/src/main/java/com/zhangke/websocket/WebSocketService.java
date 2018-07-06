@@ -9,7 +9,7 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 
 /**
- * WebSocket基础服务
+ * WebSocket 基础服务
  * Created by ZhangKe on 2018/6/13.
  */
 public class WebSocketService extends Service implements SocketListener {
@@ -55,6 +55,7 @@ public class WebSocketService extends Service implements SocketListener {
 
         responseDispatcher = WebSocketSetting.getResponseProcessDelivery();
 
+        //绑定监听网络变化广播
         if (WebSocketSetting.isReconnectWithNetworkChanged()) {
             networkChangedReceiver = new NetworkChangedReceiver(this);
             IntentFilter filter = new IntentFilter();
