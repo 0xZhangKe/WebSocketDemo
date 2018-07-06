@@ -15,8 +15,6 @@ public abstract class AbsWebSocketFragment extends Fragment implements IWebSocke
 
     protected final String LOGTAG = this.getClass().getSimpleName();
 
-    private static final String TAG = "AbsWebSocketFragment";
-
     private WebSocketServiceConnectManager mConnectManager;
 
     @Nullable

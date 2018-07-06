@@ -67,11 +67,8 @@ public abstract class AbsWebSocketActivity extends AppCompatActivity implements 
     }
 
     @Override
-    protected void onPause() {
-        if (isFinishing()) {
-            mConnectManager.onDestroy();
-        }
-        super.onPause();
+    protected void onDestroy() {
+        mConnectManager.onDestroy();
+        super.onDestroy();
     }
-
 }

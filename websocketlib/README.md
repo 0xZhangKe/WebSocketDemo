@@ -489,12 +489,19 @@ WebSocketSetting.setReconnectWithNetworkChanged(true);
 关于原理我就大概的介绍一下，也没有太多的代码，细节部分我就不说了，先说一下设计。
 
 在整个框架中的核心就是 [WebSocketThread](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/WebSocketThread.java) 线程，其内部采用的是消息驱动型的设计，使用 Looper.loop() 开启消息循环，其他模块将 WebSocket 的所有操作（消息发送、连接、断开等等）封装成消息的形式发送到该线程。
-Service 在创建一个 WebSocketThread 对象后通过获取该线程的 Handler 来向其发送控制信息。
-关于重连模块使用的是一个单独的类 [ReconnectManager](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/ReconnectManager.java) 来控制，其内部也持有一个 WebSocketThread 对象，当触发重连事件时通过 Handler 发送连接消息既可。
-WebSocket 中的各种事件（连接成功、接收到消息等等）通过监听器 [SocketListener](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/SocketListener.java) 通知 Service。
 
 我们来看一下流程图：
 
+<image src="http://otp9vas7i.bkt.clouddn.com/websocketthread.png" gravy="center"/>
 
+Service 在创建一个 WebSocketThread 对象后通过获取该线程的 Handler 来向其发送控制信息。
+关于重连模块使用的是一个单独的类 [ReconnectManager](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/ReconnectManager.java) 来管理，其内部也持有一个 WebSocketThread 对象，当触发重连事件时通过 Handler 发送连接消息既可。
+WebSocket 中的各种事件（连接成功、接收到消息等等）通过监听器 [SocketListener](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/SocketListener.java) 通知 Service。
+
+WebSocketThread 讲完了我在讲一下 WebSocketService ，也是比较重要，先看图：
+
+<image src="http://otp9vas7i.bkt.clouddn.com/websocketservice.jpg">
+
+上图描述了 WebSocket 事件从 WebSocketThread 到 WebSocketService 再到 Activity/Fragment 的事件流向，WebSocketService 中通过一个 IResponseDispatcher 接口来分发事件，默认实现为 DefaultResponseDispatcher ，不做任何处理，直接发送到下游，也可以自己实现从而实现数据拦截、转换等操作。
 
 
