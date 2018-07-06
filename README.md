@@ -1,393 +1,210 @@
-## WebSocketDemo
- WebSocket 安卓客户端的实现方式。
- 
-### 目前2.0版本正在开发，需要使用的不要直接clone，请[下载1.0版本的代码使用](https://github.com/0xZhangKe/WebSocketDemo/releases/tag/1.0)，以下文章介绍的也是1.0版本的使用方式。
-
 ## 介绍
-如果不想了解其中的原理可以直接拉到最后面的使用方式章节，按照教程使用即可，或者直接打开 demo 查看代码。</p>
+关于 WebSocket Android 端的使用封装之前已经做过一次了，但在使用了一段时间之后逐渐发现了一些问题，一直想改也没时间，正好最近公司业务比较少，就趁着这段时间有空闲把代码优化了一下，其实差不多是重新做一套了。
+这个版本的使用方式上比之前简化了很多，集成起来也更容易，并且代码逻辑更加清晰，模块与模块之间的耦合降到最低，运行效率更高，更健壮，好了废话不说了，先介绍一下使用方式。
 
-本文使用一个后台 Service 来建立 WebSocket 连接，Activity 与 Fragment 需要使用 WebSocket 接口时只需要绑定该服务既可。</p>
-WebSocketService 接收到数据之后会通知每一个绑定了 WebSocketService 服务的 Activity 及 Fragment，其自身也可以对返回的数据进行判断等等，具体如何操作根据业务需求定。</p>
-下图是 WebSocketService 的工作流程图</p>
-
-![](http://otp9vas7i.bkt.clouddn.com/WebSocketService%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B.png)</p>
-
-WebSocketService 负责建立 WebSocket 连接，接收返回的数据，接收到的数据通过 EventBus 发送出去，连接失败之后可以自动重连。</p>
-下图是 Activity 的工作流程图</p>
-
-![](http://otp9vas7i.bkt.clouddn.com/Activity%E6%B5%81%E7%A8%8B.png)</p>
-
-Activity/Fragment 绑定 WebSocket 服务，绑定成功后可以直接调用 WebSocketService 对象发送数据。</p>
-## WebSocketService
-### 添加必要的依赖
-首先添加 WebSocket 框架依赖：
+## 如何使用
+先放上 Github 地址：
+https://github.com/0xZhangKe/WebSocketDemo
+好了，首先将代码集成到自己的项目中，这里有两种集成方式，第一种是使用 Gradle 依赖这个项目既可，第二种把代码拷贝到自己项目中，我建议使用第二种方式，这样你觉得有什么问题自己改起来比较方便，当然了也可以直接给我[提 issue ](https://github.com/0xZhangKe/WebSocketDemo/issues/new)我来改。
+### 集成
+#### Gradle 方式集成
+在对应 model 的  build.gradle 中添加依赖：
+```gradle
+implementation 'com.github.0xZhangKe:WebSocketDemo:2.0'
 ```
-mpile 'com.neovisionaries:nv-websocket-client:2.3'
+然后编译一下，如果出现类似的错误：
 ```
-这个框架也是我在 Github 上找了一圈之后选中的一个，使用的人很多，文档齐全，还在继续维护。</p>
-另外还要添加一个 EventBus 及阿里的 JSON 框架：
+Failed to resolve: com.github.0xZhangKe:WebSocketDemo:2.0
 ```
-compile 'com.alibaba:fastjson:1.2.33'
-compile 'org.greenrobot:eventbus:3.0.0'
+那意味着你还没添加 Github 的仓库，到项目根目录中的 build.gradle 中添加如下代码：
+```gradle
+maven { url = 'https://jitpack.io' }
 ```
-好了完事大吉，现在开始吧。</p>
+然后 sync 一下即可。
+#### 第二种集成方式
+这个就很简单了，直接把 websocketlib 中的代码拷贝到自己的项目中就行，具体怎么做就看你的个人喜好。
 
-### 定义 WebSocket 提供的接口
-先创建一个 WebSocket 的接口，其中定义了 WebSocket 必须提供的几个公开方法：</p>
+### 相关配置
+按照上面的步骤集成进来之后再做一些简单的配置可以使用了。
+
+### 配置 WebSocket 连接地址
+首先，最重要的一点，配置 WebSocket 连接地址：
 ```java
-public interface IWebSocket {
+WebSocketSetting.setConnectUrl("Your WebSocket connect url");
+```
+这一步必须在启动 WebSocketService 使用前调用，我是在 Application 中配置的，建议你们也这么做，可以看一下[ demo ](https://github.com/0xZhangKe/WebSocketDemo/blob/master/app/src/main/java/com/zhangke/websocketdemo/App.java)的使用方式。
+这一步配置完成后一个简单的 WebSocketService 就可以使用了。
+
+### 配置统一的消息处理器
+在我们实际开发中可能需要考虑更多的问题，比如数据格式的统一规划，后台返回数据的统一处理，处理完成后再发送到下游等等。
+
+机智的我早就想到了解决方案，本项目中使用[IResponseDispatcher](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/IResponseDispatcher.java)来分发数据，可以看到这是个接口，默认会使用[DefaultResponseDispatcher](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/DefaultResponseDispatcher.java)来当做消息分发器，如果不进行设置 WebSocket 接收到数据后会直接发送给下游。
+
+那么我们先来看一下 IResponseDispatcher：
+```java
+public interface IResponseDispatcher {
+
+    //省略掉其他代码
 
     /**
-     * 发送数据
+     * 接收到消息
      *
-     * @param text 需要发送的数据
+     * @param message 接收到的消息
+     * @param delivery 消息发射器
      */
-    void sendText(String text);
+    void onMessageResponse(Response message, ResponseDelivery delivery);
 
-    /**
-     * 0-未连接
-     * 1-正在连接
-     * 2-已连接
-     */
-    int getConnectStatus();
+    //省略掉其他代码
 
-    /**
-     * 重新连接
-     */
-    void reconnect();
-
-    /**
-     * 关闭连接
-     */
-    void stop();
 }
-
 ```
-WebSocketService 需要实现这个接口，后面绑定 WebSocketService 时直接通过 IWebSocket 创建对象既可。
-### AbsWebSocketService
-我这里为了降低代码的耦合度，将与业务逻辑相关的代码（接口地址、数据处理及分发等）与 WebSocket 的连接、发送数据等操作剥离开来，所以这里创建的时一个抽象类 AbsWebSocketService 来实现与业务逻辑无关的代码。</p>
-在实际使用中只需要创建一个 WebSocketService 并继承该 AbsWebSocketService 既可，不需要改动其中的代码。</p>
-首先看一下 AbsWebSocketService 的代码：
+IResponseDispatcher 共中有五个方法需要实现，大体上都类似的，我们只看其中一个就行。
+
+onMessageResponse 方法中的两个参数，Response 后面会介绍，这里说一下 ResponseDelivery，我管它叫消息发射器，其实很简单，他内部就是维护了一个监听器的 List，当调用其中某个方法时会遍历调用所有的 Listener 中对应的方法。
+当我们处理完数据之后通过这个就可以将数据发送到下游的 Activity/Fragment 中，很简单的吧，当然也可以对消息进行拦截，或者将数据包装成统一的格式再发送出去。
+举个栗子，我们要将数据转成统一的一个实体在发送到下游，那么在实现类中可以这么做：
 ```java
-public abstract class AbsBaseWebSocketService extends Service implements IWebSocket {
-
-    private static final String TAG = "AbsBaseWebSocketService";
-    private static final int TIME_OUT = 15000;
-    private static WebSocketFactory factory = new WebSocketFactory().setConnectionTimeout(TIME_OUT);
-
-    private AbsBaseWebSocketService.WebSocketThread webSocketThread;
-    private WebSocket webSocket;
-
-    private AbsBaseWebSocketService.ServiceBinder serviceBinder = new AbsBaseWebSocketService.ServiceBinder();
-
-    public class ServiceBinder extends Binder {
-        public AbsBaseWebSocketService getService() {
-            return AbsBaseWebSocketService.this;
-        }
-    }
-
-    private boolean stop = false;
-    /**
-     * 0-未连接
-     * 1-正在连接
-     * 2-已连接
-     */
-    private int connectStatus = 0;//是否已连接
-
     @Override
-    public void onCreate() {
-        super.onCreate();
-        Log.d(TAG, "onCreate()");
-
-        ProxySettings settings = factory.getProxySettings();
-        settings.addHeader("Content-Type", "text/json");
-
-        connectStatus = 0;
-        webSocketThread = new AbsBaseWebSocketService.WebSocketThread();
-        webSocketThread.start();
-
-        Log.i(TAG, "onCreated");
+    public void onMessageResponse(Response message, ResponseDelivery delivery) {
+         delivery.onMessageResponse(new CommonResponse(message.getResponseText(), JSON.parseObject(message.getResponseText(), new TypeReference<CommonResponseEntity>() {
+         })));
     }
-
-    @Nullable
+```
+上面是把 Response 中的消息数据转成我们根据后台数据统一格式自定义的 CommonResponseEntity 对象再包装成一个自定义的 CommonResponse 对象发送出去。
+除此之外，更重要的一点是，当我们将消息数据转成 CommonResponseEntity 之后可以根据业务逻辑来进行统一的处理，例如后台规定返回数据中的 code 字段等于 1000 时才代表接口调用成功，那么我们就可以直接在这里做判断了，而不是每个地方都要判断一次：
+```java
     @Override
-    public IBinder onBind(Intent intent) {
-        if (serviceBinder == null) {
-            serviceBinder = new AbsBaseWebSocketService.ServiceBinder();
-        }
-        Log.i(TAG, "onBind");
-        return serviceBinder;
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        stop = true;
-        webSocket.disconnect();
-        webSocket.flush();
-        webSocket = null;
-        connectStatus = 0;
-        Log.i(TAG, "onDestroy");
-    }
-
-    /**
-     * 获取服务器地址
-     */
-    protected abstract String getConnectUrl();
-
-    /**
-     * 分发响应数据
-     */
-    protected abstract void dispatchResponse(String textResponse);
-
-    /**
-     * 连接成功发送 WebSocketConnectedEvent 事件，
-     * 请求成功发送 CommonResponse 事件，
-     * 请求失败发送 WebSocketSendDataErrorEvent 事件。
-     */
-    private class WebSocketThread extends Thread {
-        @Override
-        public void run() {
-            Log.i(TAG, "WebSocketThread->run()");
-            setupWebSocket();
-        }
-    }
-
-    private void setupWebSocket() {
-        if (connectStatus != 0) return;
-        connectStatus = 1;
+    public void onMessageResponse(Response message, ResponseDelivery delivery) {
         try {
-            webSocket = factory.createSocket(getConnectUrl());
-            webSocket.addListener(new WebSocketAdapter() {
-                @Override
-                public void onTextMessage(WebSocket websocket, String text) throws Exception {
-                    super.onTextMessage(websocket, text);
-                    if (debug()) {
-                        Log.i(TAG, String.format("onTextMessage->%s", text));
-                    }
-                    dispatchResponse(text);
-                }
-
-                @Override
-                public void onTextMessageError(WebSocket websocket, WebSocketException cause, byte[] data) throws Exception {
-                    super.onTextMessageError(websocket, cause, data);
-                    Log.e(TAG, "onTextMessageError()", cause);
-                    EventBus.getDefault().post(new WebSocketSendDataErrorEvent("", "", "onTextMessageError():" + cause.toString()));
-                }
-
-                @Override
-                public void onDisconnected(WebSocket websocket, WebSocketFrame serverCloseFrame, WebSocketFrame clientCloseFrame, boolean closedByServer) throws Exception {
-                    super.onDisconnected(websocket, serverCloseFrame, clientCloseFrame, closedByServer);
-                    EventBus.getDefault().post(new DisconnectedEvent());
-                    Log.e(TAG, "onDisconnected()");
-                    connectStatus = 0;
-                    if (!stop) {
-                        //断开之后自动重连
-                        setupWebSocket();
-                    }
-                }
-
-                @Override
-                public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
-                    super.onConnected(websocket, headers);
-                    Log.i(TAG, "onConnected()");
-                    connectStatus = 2;
-                    EventBus.getDefault().post(new WebSocketConnectedEvent());
-                }
-
-                @Override
-                public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
-                    super.onError(websocket, cause);
-                    Log.e(TAG, "onError()", cause);
-                    EventBus.getDefault().post(new WebSocketConnectionErrorEvent("onError:" + cause.getMessage()));
-                }
-            });
-            try {
-                webSocket.connect();
-            } catch (NullPointerException e) {
-                connectStatus = 0;
-                Log.i(TAG, String.format("NullPointerException()->%s", e.getMessage()));
-                Log.e(TAG, "NullPointerException()", e);
-                EventBus.getDefault().post(new WebSocketConnectionErrorEvent("NullPointerException:" + e.getMessage()));
-            } catch (OpeningHandshakeException e) {
-                connectStatus = 0;
-                Log.i(TAG, String.format("OpeningHandshakeException()->%s", e.getMessage()));
-                Log.e(TAG, "OpeningHandshakeException()", e);
-                StatusLine sl = e.getStatusLine();
-                Log.i(TAG, "=== Status Line ===");
-                Log.e(TAG, "=== Status Line ===");
-                Log.i(TAG, String.format("HTTP Version  = %s\n", sl.getHttpVersion()));
-                Log.e(TAG, String.format("HTTP Version  = %s\n", sl.getHttpVersion()));
-                Log.i(TAG, String.format("Status Code   = %s\n", sl.getStatusCode()));
-                Log.e(TAG, String.format("Status Code   = %s\n", sl.getStatusCode()));
-                Log.i(TAG, String.format("Reason Phrase = %s\n", sl.getReasonPhrase()));
-                Log.e(TAG, String.format("Reason Phrase = %s\n", sl.getReasonPhrase()));
-
-                Map<String, List<String>> headers = e.getHeaders();
-                Log.i(TAG, "=== HTTP Headers ===");
-                Log.e(TAG, "=== HTTP Headers ===");
-                for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-                    // Header name.
-                    String name = entry.getKey();
-
-                    // Values of the header.
-                    List<String> values = entry.getValue();
-
-                    if (values == null || values.size() == 0) {
-                        // Print the name only.
-                        System.out.println(name);
-                        continue;
-                    }
-
-                    for (String value : values) {
-                        // Print the name and the value.
-                        Log.e(TAG, String.format("%s: %s\n", name, value));
-                        Log.i(TAG, String.format("%s: %s\n", name, value));
-                    }
-                }
-                EventBus.getDefault().post(new WebSocketConnectionErrorEvent("OpeningHandshakeException:" + e.getMessage()));
-            } catch (HostnameUnverifiedException e) {
-                connectStatus = 0;
-                // The certificate of the peer does not match the expected hostname.
-                Log.i(TAG, String.format("HostnameUnverifiedException()->%s", e.getMessage()));
-                Log.e(TAG, "HostnameUnverifiedException()", e);
-                EventBus.getDefault().post(new WebSocketConnectionErrorEvent("HostnameUnverifiedException:" + e.getMessage()));
-            } catch (WebSocketException e) {
-                connectStatus = 0;
-                // Failed to establish a WebSocket connection.
-                Log.i(TAG, String.format("WebSocketException()->%s", e.getMessage()));
-                Log.e(TAG, "WebSocketException()", e);
-                EventBus.getDefault().post(new WebSocketConnectionErrorEvent("WebSocketException:" + e.getMessage()));
+            CommonResponse commonResponse = new CommonResponse(message.getResponseText(), JSON.parseObject(message.getResponseText(), new TypeReference<CommonResponseEntity>() {
+            }));
+            if (commonResponse.getResponseEntity().getCode() >= 1000) {
+                delivery.onMessageResponse(commonResponse);
+            } else {
+                ErrorResponse errorResponse = new ErrorResponse();
+                errorResponse.setErrorCode(12);
+                errorResponse.setDescription(commonResponse.getResponseEntity().getMsg());
+                errorResponse.setResponseText(message.getResponseText());
+                //将已经解析好的 CommonResponseEntity 对象保存起来以便后面使用
+                errorResponse.setReserved(responseEntity);
+                //IResponseDispatcher内的一个方法，表示接收到错误消息，通过errorCode指定错误类型
+                onSendMessageError(errorResponse, delivery);
             }
-        } catch (IOException e) {
-            connectStatus = 0;
-            Log.i(TAG, String.format("IOException()->%s", e.getMessage()));
-            Log.e(TAG, "IOException()", e);
-            EventBus.getDefault().post(new WebSocketConnectionErrorEvent("IOException:" + e.getMessage()));
+        } catch (JSONException e) {
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.setResponseText(message.getResponseText());
+            errorResponse.setErrorCode(11);
+            errorResponse.setCause(e);
+            onSendMessageError(errorResponse, delivery);
         }
     }
+```
+>onSendMessageError 方法后面会介绍
 
-    @Override
-    public void sendText(String text) {
-        if (TextUtils.isEmpty(text)) return;
-        if (debug()) {
-            Log.i(TAG, String.format("sendText()->%s", text));
-        }
-        if (webSocket != null && connectStatus == 2) {
-            webSocket.sendText(text);
-        }
+大概就是按照上面来实现，更详细的用法可以看[demo](https://github.com/0xZhangKe/WebSocketDemo/blob/master/app/src/main/java/com/zhangke/websocketdemo/AppResponseDispatcher.java)中是怎么做的。
+
+### 配置统一的消息数据类型
+一般来说，后台接口返回的数据是有个固定的格式的，通过上面的介绍我们已经了解到如何把数据转换成统一的类型发送到下游，下面我们先来简单的了解一下 [Response](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/Response.java)，我这里将所有后台返回的数据统一包装成一个 Response 对象，这是一个接口，你可以根据自己的需要来实现它：
+```java
+/**
+ * WebSocket 响应数据接口
+ * Created by ZhangKe on 2018/6/26.
+ */
+public interface Response<T> {
+
+    /**
+     * 获取响应的文本数据
+     */
+    String getResponseText();
+
+    /**
+     * 设置响应的文本数据
+     */
+    void setResponseText(String responseText);
+
+    /**
+     * 获取该数据的实体，可能为空，具体看实现类
+     */
+    T getResponseEntity();
+
+    /**
+     * 设置数据实体
+     */
+    void setResponseEntity(T responseEntity);
+}
+```
+WebSocket 接收到数据后会首先包装成 [TextResponse](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/TextResponse.java) 对象发送出去，我们看一下 TextResponse 的代码：
+```java
+/**
+ * 默认的消息响应事件包装类，
+ * 只包含文本，不包含数据实体
+ * Created by ZhangKe on 2018/6/27.
+ */
+public class TextResponse implements Response<String> {
+
+    private String responseText;
+
+    public TextResponse(String responseText) {
+        this.responseText = responseText;
     }
 
-    @Override
-    public int getConnectStatus() {
-        return connectStatus;
+    public String getResponseText() {
+        return responseText;
     }
 
-    @Override
-    public void reconnect() {
-        Log.i(TAG, "reconnect()");
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Log.i(TAG, "reconnect()->begin restart...");
-                try {
-                    Thread.sleep(200);
-                }catch(Exception e){
-                    Log.e(TAG, "reconnect()->run: ", e);
-                }
-                if (webSocketThread != null && !webSocketThread.isAlive()) {
-                    connectStatus = 0;
-                    webSocketThread = new WebSocketThread();
-                    webSocketThread.start();
-                    Log.i(TAG, "reconnect()->start success");
-                } else {
-                    Log.i(TAG, "reconnect()->start failed: webSocketThread==null || webSocketThread.isAlive()");
-                }
-            }
-        }).start();
+    public void setResponseText(String responseText) {
+        this.responseText = responseText;
     }
 
-    @Override
-    public void stop() {
-        Log.i(TAG, "stop()");
-        webSocket.disconnect();
-        stop = true;
-        Log.i(TAG, "stop()->success");
+    public String getResponseEntity() {
+        return null;
     }
 
-    public boolean debug() {
-        try {
-            ApplicationInfo info = getApplication().getApplicationInfo();
-            return (info.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
-        } catch (Exception e) {
-            return false;
-        }
+    public void setResponseEntity(String responseEntity) {
     }
 }
 ```
-其中有两个抽象方法：</p>
-```
-String getConnectUrl()//获取服务器连接地址
-void dispatchResponse(String textResponse)//接收到数据后回调此方法，在此方法中分发数据
-```
-创建好上面的 AbsWebSocketService 服务之后，还需要根据业务需求创建一个 WebSocketService 实现该类。</p>
-### WebSocketService 服务
-这个代码就很简单了，如下：
-```java
-public class WebSocketService extends AbsBaseWebSocketService {
+可以看到其中只包含了 String 类型的响应数据，没有对数据做其他操作，接收到什么就返回什么，其中的 responseText 表示 WebSocket 接收到的文本数据，除此之外我还提供了两个用于操作 ResponseEntity 的方法，我们可以将接收到的文本按照统一的格式转换成一个实体存入这个字段，然后再发送到下游。
 
-    @Override
-    protected String getConnectUrl() {
-        return "服务器对应的url";
-    }
-
-    @Override
-    protected void dispatchResponse(String textResponse) {
-        //处理数据
-        try {
-            CommonResponse<String> response = JSON.parseObject(textResponse, new TypeReference<CommonResponse<String>>() {
-            });
-            if (response == null) {
-                EventBus.getDefault().post(new WebSocketSendDataErrorEvent("", textResponse, "响应数据为空"));
-                return;
-            }
-            //此处可根据服务器接口文档进行调整，判断 code 值是否合法，如下：
-//            if (response.getCode() >= 1000 && response.getCode() < 2000) {
-//                EventBus.getDefault().post(response);
-//            }else{
-//                EventBus.getDefault().post(new WebSocketSendDataErrorEvent(response.getCommand().getPath(), textResponse, response.getMsg()));
-//            }
-            EventBus.getDefault().post(response);
-        }catch(Exception e){
-            //一般由于 JSON 解析时出现异常
-            EventBus.getDefault().post(new WebSocketSendDataErrorEvent("", textResponse, "数据异常:" + e.getMessage()));
-        }
-    }
+比如后台接口的数据格式如下：
+```json
+{
+    "message": "登陆成功",
+    "data": {
+        "name": "zhangke",
+        "sex": "男",
+        "nationality": "中国"
+    },
+    "code": 1000,
+    "path": "app_user_login"
 }
 ```
-dispatchResponse(String) 方法中就是将数据转换成对应的实体，然后使用 EventBus 将其发送出去，可以再其中做一些数据正确的判断，比如上面注释的地方。</p>
-其中的 CommonResponse 是我们后台接口的一个标准模板，所有格接口返回的数据都应该按照这个格式来，这个类就按照自家的接口写就行了，不用按照我的。看一下其中的代码：</p>
+那么我们可以将数据转换成一个统一的泛型数据实体：
 ```java
-public class CommonResponse<T> {
+/**
+ * 后台接口返回的数据格式
+ * Created by ZhangKe on 2018/6/27.
+ */
+public class CommonResponseEntity {
 
-    private String msg;
-    private T data;
+    private String message;
+    private String data;
     private int code;
     private String path;
 
-    public String getMsg() {
-        return msg;
+    public String getMessage() {
+        return message;
     }
 
-    public void setMsg(String msg) {
-        this.msg = msg;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
-    public T getData() {
+    public String getData() {
         return data;
     }
 
-    public void setData(T data) {
+    public void setData(String data) {
         this.data = data;
     }
 
@@ -407,396 +224,283 @@ public class CommonResponse<T> {
         this.path = path;
     }
 }
-
 ```
-其中 path 表示接口地址，其本质就是个字符串，我们通过这个字符串当做一个标识符，标识返回的数据属于哪个接口，然后我们才能做出对应的操作。</p>
-泛型 T 表示数据的实体，一般来说我们会按照不同的接口写出不同的实体方便使用，当然了，这些都不重要，也只是我的个人习惯，这里也不涉及核心代码，所以可以根据个人爱好随意改动。</p>
-别忘了在 AndroidManifest 中注册该服务，然后在合适的时候启动该服务，我的是在 Application 中的 onCreate 方法启动的：
+
+data 字段中的数据交给对应模块解析，这里直接转成 String，然后包装成一个 CommonResponse 发送出去：
 ```java
-public class GateApplication extends Application {
+public class CommonResponse implements Response<CommonResponseEntity> {
+
+    private String responseText;
+    private CommonResponseEntity responseEntity;
+
+    public CommonResponse(String responseText, CommonResponseEntity responseEntity) {
+        this.responseText = responseText;
+        this.responseEntity = responseEntity;
+    }
 
     @Override
-    public void onCreate() {
-        super.onCreate();
-        Intent intent = new Intent(this, WebSocketService.class);
-        startService(intent);
+    public String getResponseText() {
+        return responseText;
+    }
+
+    @Override
+    public void setResponseText(String responseText) {
+        this.responseText = responseText;
+    }
+
+    @Override
+    public CommonResponseEntity getResponseEntity() {
+        return this.responseEntity;
+    }
+
+    @Override
+    public void setResponseEntity(CommonResponseEntity responseEntity) {
+        this.responseEntity = responseEntity;
     }
 }
 ```
-到了这里 WebSocket 服务就已经介绍完了，但是我们如果直接这么用肯定很麻烦。
-比如当调用 WebSocketService.sendText(String) 方法时发现 WebSocket 连接已经断了、绑定 WebSocket 服务、判断其连接状态等等，还有很多事情要做，总不能每个 Activity/Fragment 都要写这么多代码去判断吧。</p>
-为此我又写了 AbsBaseWebSocketActivity 与 AbsBaseWebSocketFragment 两个抽象类，其中屏蔽掉了大部分的连接状态判断等等操作。
-比如我们调用 AbsBaseWebSocketFragment.sendText(String) 方法时，可以直接判断出当前时候是连接状态，如果未连接则重新连接，连接完成后再去发送数据。</p>
-先来看一下 ABSBaseWebSocketActivity 的代码：
-### AbsBaseWebSocketActivity
-其中主要包括绑定服务，判断连接状态，发送数据等操作，另外暴露出了几个方法以供使用：
+### 错误信息的处理
+刚刚已经介绍了如何统一处理消息及将消息转换成对应的实体，下面再说一下如何统一的处理错误信息。
+
+所有的错误消息将统一包装成[ErrorResponse](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/ErrorResponse.java)对象发送出去，看一下其中的代码：
 ```java
-public abstract class AbsBaseWebSocketActivity extends BaseAppCompatActivity {
-    /**
-     * 服务重连次数，
-     * 这里指的是绑定 WebSocket 服务失败时使用的重连次数，一般来说不会出现绑定失败的情况
-     */
-    private final int RECONNECT_TIME = 5;
 
-    private IWebSocket mWebSocketService;
-    protected String networkErrorTips;
+/**
+ * 出现错误时的响应
+ * Created by ZhangKe on 2018/6/25.
+ */
+public class ErrorResponse {
 
     /**
-     * 连接时机：</br>
-     * 0 - 刚进入界面时，如果 WebSocket 还未连接，会继续连接，或者由于某些原因 WebSocket 断开，会自动重连，从而会触发连接成功/失败事件；</br>
-     * 1 - onResume() 方法回调时判断 WebSocket 是否连接，如果未连接，则进行连接，从而触发连接成功/失败事件；</br>
-     * 2 - sendText() 方法会判断 WebSocket 是否已经连接，如果未连接，则进行连接，从而触发连接成功/失败事件，此时连接成功后应继续调用 sendText() 方法发送数据。</br>
-     * <p>
-     * 另外，当 connectType != 0 时，每次使用完之后应该设置为 0。因为 0 的状态是无法预知的，随时可能调用。
+     * 1-WebSocket 未连接或已断开
+     * 2-WebSocketService 服务未绑定到当前 Activity/Fragment，或绑定失败
+     * 3-WebSocket 初始化未完成
+     * 11-数据获取成功，但是解析 JSON 失败
+     * 12-数据获取成功，但是服务器返回数据中的code值不正确
      */
-    private int connectType = 0;
+    private int errorCode;
     /**
-     * 需要发送的数据，当 connectType == 2 时会使用。
+     * 错误原因
      */
-    private String needSendText;
+    private Throwable cause;
+    /**
+     * 发送的数据，可能为空
+     */
+    private String requestText;
+    /**
+     * 响应的数据，可能为空
+     */
+    private String responseText;
+    /**
+     * 错误描述，客户端可以通过这个字段来设置统一的错误提示等等
+     */
+    private String description;
 
-    private boolean isConnected = false;
-    private boolean networkReceiverIsRegister = false;
-    private int connectTime = 0;
-    protected ServiceConnection mWebSocketServiceConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            Log.i(TAG, "onServiceConnected()");
-            mWebSocketService = (IWebSocket) ((AbsBaseWebSocketService.ServiceBinder) service).getService();
-            //此处假设要不就已经连接，要不就未连接，未连接就等着接收连接成功/失败的广播即可
-            if (mWebSocketService.getConnectStatus() == 2) {
-                Log.i(TAG, "onServiceConnected()->mWebSocketService.getConnectStatus() == 2; BindSuccess");
-                onServiceBindSuccess();
-            } else {
-                Log.i(TAG, String.format("onServiceConnected()->mWebSocketService.getConnectStatus() == %s", mWebSocketService.getConnectStatus()));
-                if (mWebSocketService.getConnectStatus() == 0) {
-                    Log.i(TAG, "onServiceConnected()->mWebSocketService.getConnectStatus() == 0; mWebSocketService.restartThread()");
-                    mWebSocketService.reconnect();
-                }
-                showRoundProgressDialog();
-            }
-        }
+    /**
+     * 保留字段，可以自定义存放任意数据
+     */
+    private Object reserved;
 
-        public void onServiceDisconnected(ComponentName name) {
-            Log.i(TAG, "onServiceDisconnected()");
-            mWebSocketService = null;
-            if (connectTime <= RECONNECT_TIME) {
-                Log.i(TAG, "onServiceDisconnected()->retry bindWebSocketService()");
-                bindWebSocketService();
-            }
-        }
-    };
-
-    @Override
-    protected void initBind() {
-        super.initBind();
-        networkErrorTips = "网络错误";
-        EventBus.getDefault().register(this);
-        bindWebSocketService();
+    public ErrorResponse() {
     }
 
     /**
-     * 从后台返回时，判断服务是否已断开，
-     * 断开则调用 reconnect 方法重连。
+     * 1-WebSocket 未连接或已断开
+     * 2-WebSocketService 服务未绑定到当前 Activity/Fragment，或绑定失败
+     * 3-WebSocket 初始化未完成
+     * 11-数据获取成功，但是解析 JSON 失败
+     * 12-数据获取成功，但是服务器返回数据中的code值不正确
      */
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (mWebSocketService != null)
-            Log.e(TAG, "-----------------ConnectStatus" + mWebSocketService.getConnectStatus());
-        if (mWebSocketService != null && mWebSocketService.getConnectStatus() != 2) {
-            Log.i(TAG, "onResume()->WebSocket 未连接");
-            showRoundProgressDialog();
-            if (mWebSocketService.getConnectStatus() == 0) {
-                Log.i(TAG, "onResume()->WebSocket 尝试重新连接 restartThread()");
-                mWebSocketService.reconnect();
-            }else{
-                Log.i(TAG, "onResume()->WebSocket 正在连接");
-            }
-            connectType = 1;
-        }
-    }
-
-    protected abstract Class<? extends AbsBaseWebSocketService> getWebSocketClass();
-
-    /**
-     * 绑定服务，
-     * 进入该界面时绑定服务，
-     * 绑定失败则继续绑定，知道超过设定的次数为止。
-     */
-    protected void bindWebSocketService() {
-        Intent intent = new Intent(this, getWebSocketClass());
-        bindService(intent, mWebSocketServiceConnection, Context.BIND_AUTO_CREATE);
-        connectTime++;
-        Log.i(TAG, "bindWebSocketService() success");
-    }
-
-    protected abstract void onCommonResponse(CommonResponse<String> response);
-
-    protected abstract void onErrorResponse(WebSocketSendDataErrorEvent response);
-
-    /**
-     * 连接失败
-     */
-    protected void onConnectFailed() {
-        Log.i(TAG, "onConnectFailed()");
-
-    }
-
-    protected IWebSocket getWebSocketService() {
-        return mWebSocketService;
+    public int getErrorCode() {
+        return errorCode;
     }
 
     /**
-     * 服务绑定成功后回调改方法，可以在此方法中加载一些初始化数据
+     * 1-WebSocket 未连接或已断开
+     * 2-WebSocketService 服务未绑定到当前 Activity/Fragment，或绑定失败
+     * 3-WebSocket 初始化未完成
+     * 11-数据获取成功，但是解析 JSON 失败
+     * 12-数据获取成功，但是服务器返回数据中的code值不正确
      */
-    protected void onServiceBindSuccess() {
-        Log.i(TAG, "onServiceBindSuccess()");
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
     }
 
-    /**
-     * 发送数据
-     */
-    protected void sendText(String text) {
-        if (mWebSocketService.getConnectStatus() == 2) {
-            Log.i(TAG, "sendText()->已连接，直接发送数据");
-            //已连接，直接发送数据
-            mWebSocketService.sendText(text);
-        } else {
-            //未连接，先连接，再发送数据
-            Log.i(TAG, "sendText()->未连接");
-            connectType = 2;
-            needSendText = text;
-            if (mWebSocketService.getConnectStatus() == 0) {
-                Log.i(TAG, "sendText()->建立连接");
-                mWebSocketService.reconnect();
-            }
-        }
+    public Throwable getCause() {
+        return cause;
     }
 
-    /**
-     * 发送数据失败或者数据返回不合规
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(CommonResponse<String> event) {
-        onCommonResponse(event);
+    public void setCause(Throwable cause) {
+        this.cause = cause;
     }
 
-    /**
-     * 发送数据失败或者数据返回不合规（code >=2000等）
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(WebSocketSendDataErrorEvent event) {
-        Log.e(TAG, String.format("onEventMainThread(WebSocketSendDataErrorEvent)->%s", event.toString()));
-        onErrorResponse(event);
+    public String getRequestText() {
+        return requestText;
     }
 
-    /**
-     * 连接成功
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(WebSocketConnectedEvent event) {
-        isConnected = true;
-        if (connectType == 2 && !TextUtils.isEmpty(needSendText)) {
-            Log.i(TAG, "onEventMainThread(WebSocketConnectedEvent) -> sendText()");
-            sendText(needSendText);
-        } else if (connectType == 0) {
-            Log.i(TAG, "onEventMainThread(WebSocketConnectedEvent) -> onServiceBindSuccess()");
-            closeRoundProgressDialog();
-            onServiceBindSuccess();
-        }
-        connectType = 0;
+    public void setRequestText(String requestText) {
+        this.requestText = requestText;
     }
 
-    /**
-     * 连接失败
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(WebSocketConnectionErrorEvent event) {
-        Log.e(TAG, String.format("onEventMainThread(WebSocketConnectionErrorEvent)->onConnectFailed:%s", event.toString()));
-        closeRoundProgressDialog();
-        showToastMessage(networkErrorTips);
-        connectType = 0;
-        onConnectFailed();
+    public String getResponseText() {
+        return responseText;
     }
 
-    @Override
-    protected void onDestroy() {
-        unbindService(mWebSocketServiceConnection);
-        EventBus.getDefault().unregister(this);
-        super.onDestroy();
+    public void setResponseText(String responseText) {
+        this.responseText = responseText;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Object getReserved() {
+        return reserved;
+    }
+
+    public void setReserved(Object reserved) {
+        this.reserved = reserved;
     }
 }
 ```
-看一下其中的抽象方法：
-```
-Class<? extends AbsBaseWebSocketService> getWebSocketClass();//获取 WebSocketService 类，这里传入 WebSocketService.class 既可
-void onCommonResponse(CommonResponse<String> response);//当有接收到数据时会回调此方法
-void onErrorResponse(WebSocketSendDataErrorEvent response);//当有发送数据失败时会回调此方法
-```
-这样一个 WebSocket 的功能就已经实现了，现在来说一下怎么使用。
-### 使用方式
-直接使需要的 Activity 继承 ABSBaseWebSocketActivity，调用 sendText(String) 方法既可发送数据，接收到数据后会回调 onCommonResponse(CommonResponse<String>) 方法或 onErrorResponse(WebSocketSendDataErrorEvent) 方法。</p>
-下面用一个使用案例更直观一点：</p>
-假设现在要在 LoginActivity 中实现登陆功能，首先创建 LoginActivity，并初始化控件：
-```java
-public class LoginActivity extends AbsBaseWebSocketActivity {
-
-    private EditText etAccount;
-    private EditText etPassword;
-    private Button btnLogin;
-
-    @Override
-    protected int getLayoutResId() {
-        return R.layout.activity_login;
-    }
-
-    @Override
-    protected void initView() {
-        etAccount = (EditText) findViewById(R.id.et_account);
-        etPassword = (EditText) findViewById(R.id.et_password);
-        btnLogin = (Button) findViewById(R.id.btn_login);
-
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String account = etAccount.getText().toString();
-                String password = etPassword.getText().toString();
-                if(TextUtils.isEmpty(account) || TextUtils.isEmpty(password)){
-                    showToastMessage("输入不能为空");
-                    return;
-                }
-                login(account, password);
-            }
-        });
-    }
-
-    private void login(String account, String password){
-
-    }
-
-    @Override
-    protected Class<? extends AbsBaseWebSocketService> getWebSocketClass() {
-        return WebSocketService.class;
-    }
-
-    @Override
-    protected void onCommonResponse(CommonResponse<String> response) {
-
-    }
-
-    @Override
-    protected void onErrorResponse(WebSocketSendDataErrorEvent response) {
-
-    }
-}
-```
-上面的代码就是很简单的初始化控件，监听按键输入。
-其中的 login(String, String) 方法是空的，现在我们来完成 login 方法：
-```java
-    private void login(String account, String password){
-        JSONObject param = new JSONObject();
-        param.put("account", account);
-        param.put("password", password);
-        param.put("path", LOGIN_PATH);
-        sendText(param.toString());//调用 WebSocket 发送数据
-        showRoundProgressDialog();//显示加载对话框
-    }
-```
-以及获取返回数据：
+其中包括了五种错误类型，处理错误消息时就按照错误码来判断既可，另外还提供了一个 reserved 保留字段，这个用法可以看上面的**配置统一的消息处理器**那一节。
+错误信息的处理同样也在 IResponseDispatcher 中处理，上面已经介绍了其中的 onMessageResponse ，现在再来说一下 onSendMessageError 方法：
 ```java
     /**
-     * 登陆成功
+     * 统一处理错误信息，
+     * 界面上可使用 ErrorResponse#getDescription() 来当做提示语
      */
     @Override
-    protected void onCommonResponse(CommonResponse<String> response) {
-        closeRoundProgressDialog();//关闭加载对话框
-        showToastMessage("登陆成功");
-    }
-
-    /**
-     * 调用接口出错或接口提示错误
-     */
-    @Override
-    protected void onErrorResponse(WebSocketSendDataErrorEvent response) {
-        closeRoundProgressDialog();//关闭加载对话框
-        showToastMessage(String.format("登陆失败：%s", response));
-    }
-```
-下面来看一下完整的 LoginActivity 代码：
-```java
-public class LoginActivity extends AbsBaseWebSocketActivity {
-    /**
-     * 假设这是登陆的接口Path
-     */
-    private static final String LOGIN_PATH = "path_login";
-
-    private EditText etAccount;
-    private EditText etPassword;
-    private Button btnLogin;
-
-    @Override
-    protected int getLayoutResId() {
-        return R.layout.activity_login;
-    }
-
-    @Override
-    protected void initView() {
-        etAccount = (EditText) findViewById(R.id.et_account);
-        etPassword = (EditText) findViewById(R.id.et_password);
-        btnLogin = (Button) findViewById(R.id.btn_login);
-
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String account = etAccount.getText().toString();
-                String password = etPassword.getText().toString();
-                if(TextUtils.isEmpty(account) || TextUtils.isEmpty(password)){
-                    showToastMessage("输入不能为空");
-                    return;
-                }
-                login(account, password);
-            }
-        });
-    }
-
-    private void login(String account, String password){
-        JSONObject param = new JSONObject();
-        param.put("account", account);
-        param.put("password", password);
-        param.put("path", LOGIN_PATH);
-        sendText(param.toString());//调用 WebSocket 发送数据
-        showRoundProgressDialog();//显示加载对话框
-    }
-
-    /**
-     * 登陆成功
-     */
-    @Override
-    protected void onCommonResponse(CommonResponse<String> response) {
-        if (response != null && !TextUtils.isEmpty(response.getPath()) && TextUtils.equals(LOGIN_PATH, response.getPath())) {
-            //我们需要通过 path 判断是不是登陆接口返回的数据，因为也有可能是其他接口返回的
-            closeRoundProgressDialog();//关闭加载对话框
-            showToastMessage("登陆成功");
+    public void onSendMessageError(ErrorResponse error, ResponseDelivery delivery) {
+        switch (error.getErrorCode()) {
+            case 1:
+                error.setDescription("网络错误");
+                break;
+            case 2:
+                error.setDescription("网络错误");
+                break;
+            case 3:
+                error.setDescription("网络错误");
+                break;
+            case 11:
+                error.setDescription("数据格式异常");
+                Log.e(LOGTAG, "数据格式异常", error.getCause());
+                break;
         }
+        delivery.onSendMessageError(error);
+    }
+```
+其实这里主要就是用来通过错误码给出不同的错误提示，其它的也没做什么，也可以在这里打印一下 Log 啊等等，code==12 时这里没有设置提示语，因为 12 表示接口已经请求成功了，但是后台后台接口给了错误的提示，比如密码错误等等，这时候错误信息应该是接口中给出，当然我们也可以自己来根据业务调整。
+
+关于配置的就是这么多了，下面在介绍一下如何使用。
+### 使用
+我提供了一个 [AbsWebSocketActivity](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/AbsWebSocketActivity.java) 和一个 [AbsWebSocketFragment](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/AbsWebSocketFragment.java) 抽象基类，需要使用 WebSocket 的界面只需要继承这两个中的某一个就行，看一下 AbsWebSocketActivity 的代码：
+```java
+/**
+ * 已经绑定了 WebSocketService 服务的 Activity，
+ * <p>
+ * Created by ZhangKe on 2018/6/25.
+ */
+public abstract class AbsWebSocketActivity extends AppCompatActivity implements IWebSocketPage {
+
+    protected final String LOGTAG = this.getClass().getSimpleName();
+
+    private WebSocketServiceConnectManager mConnectManager;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mConnectManager = new WebSocketServiceConnectManager(this, this);
+        mConnectManager.onCreate();
+    }
+
+    @Override
+    public void sendText(String text) {
+        mConnectManager.sendText(text);
     }
 
     /**
-     * 调用接口出错或接口提示错误
+     * 服务绑定成功时的回调，可以在此初始化数据
      */
     @Override
-    protected void onErrorResponse(WebSocketSendDataErrorEvent response) {
-        closeRoundProgressDialog();//关闭加载对话框
-        showToastMessage(String.format("登陆失败：%s", response));
+    public void onServiceBindSuccess() {
+
+    }
+
+    /**
+     * WebSocket 连接成功事件
+     */
+    @Override
+    public void onConnected() {
+
+    }
+
+    /**
+     * WebSocket 连接出错事件
+     *
+     * @param cause 出错原因
+     */
+    @Override
+    public void onConnectError(Throwable cause) {
+
+    }
+
+    /**
+     * WebSocket 连接断开事件
+     */
+    @Override
+    public void onDisconnected() {
+
     }
 
     @Override
-    protected Class<? extends AbsBaseWebSocketService> getWebSocketClass() {
-        return WebSocketService.class;//这里传入 WebSocketService 既可
+    protected void onPause() {
+        if (isFinishing()) {
+            mConnectManager.onDestroy();
+        }
+        super.onPause();
     }
+
 }
 ```
-按照上面所示就可以完成一次 WebSocket 的接口调用。</p>
-另外还有一点需要注意的，考虑这样的一种情况，比如我们在打开登陆界面时需要初始化一些数据，如果是 HTTP 接口我们可以直接在 onCreate 方法中获取数据就行了，但是使用 WebSocket 就没办法在 onCreate 去调用，因为打开一个新的 Activity 时我们需要先绑定 WebSocketService 服务，我们得在绑定完成后才能调用 WebSocket 接口。</p>
-ABSBaseWebSocketActivity 中提供了一个 onServiceBindSuccess() 方法，这个方法就是绑定成功后的回调方法，我们可以再这个方法中初始化一些数据。</p>
-**PS：我们可以在创建一个 BaseWebSocketServiceActivity 抽象类，实现其中的 Class<? extends AbsBaseWebSocketService> getWebSocketClass() 方法，因为在同一个 APP 中这个方法的返回值是一直不变的。**
-到此关于如何在安卓上实现一个 WebSocket 客户端就介绍完了，有问题欢迎讨论。
+代码很简洁的吧，有关于对 WebSocketService 的绑定、监听等操作全部放在了 [WebSocketServiceConnectManager](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/WebSocketServiceConnectManager.java) 类中，这样规避了代码重复问题，如果你想做一下自己的 BaseWebSocketActivity/BaseWebSocketFragment 直接按照这里面的代码实现既可。
+AbsWebSocketActivity/AbsWebSocketFragment 中提供了一系列的方法以供使用，大部分方法一般都不需要用的，主要有三个方法要说一下：
+```java
+public void onServiceBindSuccess();//WebSocketService 服务绑定成功回调事件，可以在这个回调方法中初始化一下数据
+public void onMessageResponse(Response message);//接收到消息回调事件
+public void onSendMessageError(ErrorResponse error);//消息发送失败或接收到错误消息事件
+```
+onMessageResponse 及 onSendMessageError 方法中的 Response 和 ErrorResponse 参数上面已经介绍过了，另外还有一个 onServiceBindSuccess 方法，表示服务绑定成功，可以开始发送数据了。
+### 重连机制
+连接断开后会自动重连 20 次，每次间隔 500 毫秒。也可以通过监听网络连接变化自动重连，这部分我已经写好了，配置一下既可开启。
+```java
+WebSocketSetting.setReconnectWithNetworkChanged(true);
+```
+跟上面说的一样，这个也要在启动 WebSocketService 之前调用。
+
+好了关于如何配置及使用差不多就这样了，如果还有哪里不清楚的随时可以问我哦，下面在介绍的是其中的原理，不想看的可以直接跳过。
+
+## 原理
+关于原理我就大概的介绍一下，也没有太多的代码，细节部分我就不说了，先说一下设计。
+
+在整个框架中的核心就是 [WebSocketThread](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/WebSocketThread.java) 线程，其内部采用的是消息驱动型的设计，使用 Looper.loop() 开启消息循环，其他模块将 WebSocket 的所有操作（消息发送、连接、断开等等）封装成消息的形式发送到该线程。
+
+我们来看一下流程图：
+![流程图](http://otp9vas7i.bkt.clouddn.com/websocketthread.png)
+
+Service 在创建一个 WebSocketThread 对象后通过获取该线程的 Handler 来向其发送控制信息。
+关于重连模块使用的是一个单独的类 [ReconnectManager](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/ReconnectManager.java) 来管理，其内部也持有一个 WebSocketThread 对象，当触发重连事件时通过 Handler 发送连接消息既可。
+WebSocket 中的各种事件（连接成功、接收到消息等等）通过监听器 [SocketListener](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/SocketListener.java) 通知 Service。
+
+WebSocketThread 讲完了我在讲一下 WebSocketService ，也是比较重要，先看图：
+
+![WebSocketService ](http://otp9vas7i.bkt.clouddn.com/websocketservice.jpg)
+
+上图描述了 WebSocket 事件从 WebSocketThread 到 WebSocketService 再到 Activity/Fragment 的事件流向，WebSocketService 中通过一个 IResponseDispatcher 接口来分发事件，默认实现为 DefaultResponseDispatcher ，不做任何处理，直接发送到下游，也可以自己实现从而实现数据拦截、转换等操作。
+
+
+好了就说到这里了，具体的一些细节直接看代码就行，还是很清晰的，要是有什么疑问直接问我也行。
