@@ -482,6 +482,17 @@ WebSocketSetting.setReconnectWithNetworkChanged(true);
 ```
 跟上面说的一样，这个也要在启动 WebSocketService 之前调用。
 
+别忘了在 AndroidManifest.xml 配置广播和权限：
+```xml
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <application>
+        <!--省略代码-->
+        <receiver android:name="com.zhangke.websocket.NetworkChangedReceiver" />
+    </application>
+```
+
 好了关于如何配置及使用差不多就这样了，如果还有哪里不清楚的随时可以问我哦，下面在介绍的是其中的原理，不想看的可以直接跳过。
 
 ## 原理
