@@ -147,6 +147,24 @@ public class WebSocketServiceConnectManager {
         }
     }
 
+    public void reconnect() {
+        if (webSocketServiceBindSuccess && mWebSocketService != null) {
+            mWebSocketService.reconnect();
+        } else {
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.setErrorCode(2);
+            errorResponse.setCause(new Throwable("WebSocketService dose not bind!"));
+            ResponseDelivery delivery = new ResponseDelivery();
+            delivery.addListener(mSocketListener);
+            WebSocketSetting.getResponseProcessDelivery().onSendMessageError(errorResponse, delivery);
+            if (!binding) {
+                bindTime = 0;
+                Log.d(TAG, String.format("WebSocketService 连接断开，开始第%s次重连", bindTime));
+                bindService();
+            }
+        }
+    }
+
     public void onDestroy() {
         binding = false;
         bindTime = 0;
