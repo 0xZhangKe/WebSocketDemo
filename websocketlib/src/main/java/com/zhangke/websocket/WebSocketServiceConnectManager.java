@@ -115,9 +115,7 @@ public class WebSocketServiceConnectManager {
     }
 
     public void onCreate() {
-        for (int i = 0; i < 10; i++) {
-            bindService();
-        }
+        bindService();
     }
 
     private void bindService() {
