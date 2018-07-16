@@ -1,5 +1,7 @@
 package com.zhangke.websocket;
 
+import android.text.TextUtils;
+
 /**
  * 出现错误时的响应
  * Created by ZhangKe on 2018/6/25.
@@ -99,5 +101,40 @@ public class ErrorResponse {
 
     public void setReserved(Object reserved) {
         this.reserved = reserved;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[");
+        builder.append("hashCode=");
+        builder.append(hashCode());
+        builder.append(",");
+        builder.append("errorCode=");
+        builder.append(errorCode);
+        builder.append(",");
+        builder.append("cause=");
+        builder.append(cause.toString());
+        builder.append(",");
+        if (!TextUtils.isEmpty(requestText)) {
+            builder.append("requestText=");
+            builder.append(requestText);
+            builder.append(",");
+        }
+        if (!TextUtils.isEmpty(responseText)) {
+            builder.append("responseText=");
+            builder.append(responseText);
+            builder.append(",");
+        }
+        builder.append("description=");
+        builder.append(description);
+        builder.append(",");
+        if (reserved != null) {
+            builder.append("reserved=");
+            builder.append(reserved.toString());
+            builder.append(",");
+        }
+        builder.append("]");
+        return builder.toString();
     }
 }

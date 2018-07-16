@@ -69,7 +69,7 @@ public class LoginActivity extends AbsWebSocketActivity {
 
     @Override
     public void onMessageResponse(Response message) {
-        UiUtil.showToast(LoginActivity.this, "登陆成功: " + ((CommonResponse)message).getResponseEntity().getMsg());
+        UiUtil.showToast(LoginActivity.this, "登陆成功: " + ((CommonResponse)message).getResponseEntity().getMessage());
     }
 
     @Override

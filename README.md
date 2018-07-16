@@ -3,24 +3,21 @@
 这个版本的使用方式上比之前简化了很多，集成起来也更容易，并且代码逻辑更加清晰，模块与模块之间的耦合降到最低，运行效率更高，更健壮，好了废话不说了，先介绍一下使用方式。
 
 ## 如何使用
-先放上 Github 地址：
-https://github.com/0xZhangKe/WebSocketDemo
-好了，首先将代码集成到自己的项目中，这里有两种集成方式，第一种是使用 Gradle 依赖这个项目既可，第二种把代码拷贝到自己项目中，我建议使用第二种方式，这样你觉得有什么问题自己改起来比较方便，当然了也可以直接给我[提 issue ](https://github.com/0xZhangKe/WebSocketDemo/issues/new)我来改。
+首先将代码集成到自己的项目中，这里有两种集成方式，第一种是使用 Gradle 依赖这个项目既可，第二种把代码拷贝到自己项目中，我建议使用第二种方式，这样你觉得有什么问题自己改起来比较方便，当然了也可以直接给我提 [issue](https://github.com/0xZhangKe/WebSocketDemo/issues/new) 我来改。
 ### 集成
 #### Gradle 方式集成
 在对应 model 的  build.gradle 中添加依赖：
 ```gradle
-implementation 'com.github.0xZhangKe:WebSocketDemo:2.0'
+implementation 'com.github.0xZhangKe:WebSocketDemo:2.2'
 ```
-然后编译一下，如果出现类似的错误：
+然后 sync 一下，如果出现类似的错误：
 ```
-Failed to resolve: com.github.0xZhangKe:WebSocketDemo:2.0
+Failed to resolve: com.github.0xZhangKe:WebSocketDemo:2.2
 ```
 那意味着你还没添加 Github 的仓库，到项目根目录中的 build.gradle 中添加如下代码：
 ```gradle
 maven { url = 'https://jitpack.io' }
 ```
-然后 sync 一下即可。
 #### 第二种集成方式
 这个就很简单了，直接把 websocketlib 中的代码拷贝到自己的项目中就行，具体怎么做就看你的个人喜好。
 
@@ -38,7 +35,7 @@ WebSocketSetting.setConnectUrl("Your WebSocket connect url");
 ### 配置统一的消息处理器
 在我们实际开发中可能需要考虑更多的问题，比如数据格式的统一规划，后台返回数据的统一处理，处理完成后再发送到下游等等。
 
-机智的我早就想到了解决方案，本项目中使用[IResponseDispatcher](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/IResponseDispatcher.java)来分发数据，可以看到这是个接口，默认会使用[DefaultResponseDispatcher](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/DefaultResponseDispatcher.java)来当做消息分发器，如果不进行设置 WebSocket 接收到数据后会直接发送给下游。
+机智的我早就想到了解决方案，本项目中使用 [IResponseDispatcher](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/IResponseDispatcher.java) 来分发数据，可以看到这是个接口，默认会使用 [DefaultResponseDispatcher](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/DefaultResponseDispatcher.java) 来当做消息分发器，如果不进行设置 WebSocket 接收到数据后会直接发送给下游。
 
 那么我们先来看一下 IResponseDispatcher：
 ```java
