@@ -12,51 +12,65 @@ import java.util.List;
  */
 public class ResponseDelivery implements SocketListener {
 
-    private List<SocketListener> mSocketListenerList = new ArrayList<>();
+    private final List<SocketListener> mSocketListenerList = new ArrayList<>();
 
     public ResponseDelivery() {
     }
 
     public void addListener(SocketListener listener) {
-        mSocketListenerList.add(listener);
+        synchronized (mSocketListenerList) {
+            mSocketListenerList.add(listener);
+        }
     }
 
     public void removeListener(SocketListener listener) {
-        mSocketListenerList.remove(listener);
+        synchronized (mSocketListenerList) {
+            mSocketListenerList.remove(listener);
+        }
     }
 
     @Override
     public void onConnected() {
-        for (SocketListener listener : mSocketListenerList) {
-            listener.onConnected();
+        synchronized (mSocketListenerList) {
+            for (SocketListener listener : mSocketListenerList) {
+                listener.onConnected();
+            }
         }
     }
 
     @Override
     public void onConnectError(Throwable cause) {
-        for (SocketListener listener : mSocketListenerList) {
-            listener.onConnectError(cause);
+        synchronized (mSocketListenerList) {
+            for (SocketListener listener : mSocketListenerList) {
+                listener.onConnectError(cause);
+            }
         }
     }
 
     @Override
     public void onDisconnected() {
-        for (SocketListener listener : mSocketListenerList) {
-            listener.onDisconnected();
+        synchronized (mSocketListenerList) {
+            for (SocketListener listener : mSocketListenerList) {
+                listener.onDisconnected();
+            }
         }
     }
 
     @Override
     public void onMessageResponse(Response message) {
-        for (SocketListener listener : mSocketListenerList) {
-            listener.onMessageResponse(message);
+        synchronized (mSocketListenerList) {
+            for (SocketListener listener : mSocketListenerList) {
+                listener.onMessageResponse(message);
+            }
         }
     }
 
     @Override
     public void onSendMessageError(ErrorResponse message) {
-        for (SocketListener listener : mSocketListenerList) {
-            listener.onSendMessageError(message);
+        synchronized (mSocketListenerList) {
+            for (SocketListener listener : mSocketListenerList) {
+                listener.onSendMessageError(message);
+            }
         }
     }
 }
