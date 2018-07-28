@@ -511,4 +511,6 @@ WebSocketThread 讲完了我在讲一下 WebSocketService ，也是比较重要�
 上图描述了 WebSocket 事件从 WebSocketThread 到 WebSocketService 再到 Activity/Fragment 的事件流向，WebSocketService 中通过一个 IResponseDispatcher 接口来分发事件，默认实现为 DefaultResponseDispatcher ，不做任何处理，直接发送到下游，也可以自己实现从而实现数据拦截、转换等操作。
 
 
-好了就说到这里了，具体的一些细节直接看代码就行，还是很清晰的，要是有什么疑问直接问我也行，我的微信：zke8888888。
+好了就说到这里了，具体的一些细节直接看代码就行，还是很清晰的，要是有什么疑问直接问我也行。
+我的微信：
+![微信二维码](https://img-blog.csdn.net/20180728142732128?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTM4NzI4NTc=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
