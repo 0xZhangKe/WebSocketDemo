@@ -513,4 +513,4 @@ WebSocketThread 讲完了我在讲一下 WebSocketService ，也是比较重要�
 
 好了就说到这里了，具体的一些细节直接看代码就行，还是很清晰的，要是有什么疑问直接问我也行。
 我的微信：
-![微信二维码](https://img-blog.csdn.net/20180728142732128?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTM4NzI4NTc=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+![微信二维码](http://otp9vas7i.bkt.clouddn.com/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180728142713.jpg)
