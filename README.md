@@ -498,7 +498,7 @@ WebSocketSetting.setReconnectWithNetworkChanged(true);
 在整个框架中的核心就是 [WebSocketThread](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/WebSocketThread.java) 线程，其内部采用的是消息驱动型的设计，使用 Looper.loop() 开启消息循环，其他模块将 WebSocket 的所有操作（消息发送、连接、断开等等）封装成消息的形式发送到该线程。
 
 我们来看一下流程图：
-![流程图](http://otp9vas7i.bkt.clouddn.com/websocketthread.png)
+![流程图](image/websocketthread.png)
 
 Service 在创建一个 WebSocketThread 对象后通过获取该线程的 Handler 来向其发送控制信息。
 关于重连模块使用的是一个单独的类 [ReconnectManager](https://github.com/0xZhangKe/WebSocketDemo/blob/master/websocketlib/src/main/java/com/zhangke/websocket/ReconnectManager.java) 来管理，其内部也持有一个 WebSocketThread 对象，当触发重连事件时通过 Handler 发送连接消息既可。
@@ -506,11 +506,11 @@ WebSocket 中的各种事件（连接成功、接收到消息等等）通过监�
 
 WebSocketThread 讲完了我在讲一下 WebSocketService ，也是比较重要，先看图：
 
-![WebSocketService ](http://otp9vas7i.bkt.clouddn.com/websocketservice.jpg)
+![WebSocketService ](image/websocketservice.png)
 
 上图描述了 WebSocket 事件从 WebSocketThread 到 WebSocketService 再到 Activity/Fragment 的事件流向，WebSocketService 中通过一个 IResponseDispatcher 接口来分发事件，默认实现为 DefaultResponseDispatcher ，不做任何处理，直接发送到下游，也可以自己实现从而实现数据拦截、转换等操作。
 
 
 好了就说到这里了，具体的一些细节直接看代码就行，还是很清晰的，要是有什么疑问直接问我也行。
 我的微信：
-![微信二维码](http://otp9vas7i.bkt.clouddn.com/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20180728142713.jpg)
+![微信二维码](image/qr.png)
