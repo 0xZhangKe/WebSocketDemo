@@ -24,10 +24,7 @@ public class WebSocketThread extends Thread {
 
     private static final String TAG = "WebSocketLib";
 
-    /**
-     * WebSocket 连接地址
-     */
-    private String connectUrl;
+    private WebSocketSetting mSetting;
 
     private WebSocketClient mWebSocket;
 
@@ -45,8 +42,8 @@ public class WebSocketThread extends Thread {
      */
     private int connectStatus = 0;
 
-    WebSocketThread(String connectUrl) {
-        this.connectUrl = connectUrl;
+    WebSocketThread(WebSocketSetting setting) {
+        this.mSetting = setting;
         mReconnectManager = new ReconnectManager(this);
     }
 
@@ -129,10 +126,10 @@ public class WebSocketThread extends Thread {
                 connectStatus = 1;
                 try {
                     if (mWebSocket == null) {
-                        if(TextUtils.isEmpty(WebSocketSetting.getConnectUrl())){
+                        if(TextUtils.isEmpty(mSetting.getConnectUrl())){
                             throw new RuntimeException("WebSocket connect url is empty!");
                         }
-                        mWebSocket = new WebSocketClient(new URI(connectUrl), new Draft_6455()) {
+                        mWebSocket = new WebSocketClient(new URI(mSetting.getConnectUrl()), new Draft_6455()) {
 
                             @Override
                             public void onOpen(ServerHandshake handShakeData) {
@@ -169,6 +166,9 @@ public class WebSocketThread extends Thread {
                             }
                         };
                         Log.d(TAG, "WebSocket 开始连接...");
+                        if(mSetting.getProxy() != null){
+                            mWebSocket.setProxy(mSetting.getProxy());
+                        }
                         mWebSocket.connect();
                     } else {
                         Log.d(TAG, "WebSocket 开始重新连接...");
