@@ -1,5 +1,8 @@
 package com.zhangke.websocket;
 
+import com.zhangke.websocket.request.ErrorResponse;
+import com.zhangke.websocket.request.Response;
+
 /**
  * WebSocket监听器
  * Created by ZhangKe on 2018/6/8.

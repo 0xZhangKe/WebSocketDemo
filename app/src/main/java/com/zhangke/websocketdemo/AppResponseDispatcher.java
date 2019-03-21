@@ -5,10 +5,10 @@ import android.util.Log;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.TypeReference;
-import com.zhangke.websocket.ErrorResponse;
+import com.zhangke.websocket.request.ErrorResponse;
 import com.zhangke.websocket.IResponseDispatcher;
-import com.zhangke.websocket.Response;
-import com.zhangke.websocket.ResponseDelivery;
+import com.zhangke.websocket.request.Response;
+import com.zhangke.websocket.request.ResponseDelivery;
 
 /**
  * Created by ZhangKe on 2018/6/27.

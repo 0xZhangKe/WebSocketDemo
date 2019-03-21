@@ -1,5 +1,9 @@
 package com.zhangke.websocket;
 
+import com.zhangke.websocket.request.ErrorResponse;
+import com.zhangke.websocket.request.Response;
+import com.zhangke.websocket.request.ResponseDelivery;
+
 /**
  * 用于处理及分发接收到的消息的接口，
  * 如果需要自定义事件的分发，实现这个类并设置到{@link WebSocketSetting} 中即可。

@@ -3,6 +3,8 @@ package com.zhangke.websocket;
 import android.os.Handler;
 import android.util.Log;
 
+import com.zhangke.websocket.request.MessageType;
+
 import org.java_websocket.client.WebSocketClient;
 
 import java.util.concurrent.ExecutorService;

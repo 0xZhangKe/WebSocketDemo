@@ -1,4 +1,6 @@
-package com.zhangke.websocket;
+package com.zhangke.websocket.request;
+
+import com.zhangke.websocket.request.Response;
 
 /**
  * 默认的消息响应事件包装类，

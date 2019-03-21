@@ -6,6 +6,10 @@ import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.zhangke.websocket.request.ErrorResponse;
+import com.zhangke.websocket.request.MessageType;
+import com.zhangke.websocket.request.TextResponse;
+
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;

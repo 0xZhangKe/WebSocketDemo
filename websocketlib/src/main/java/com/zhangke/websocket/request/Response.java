@@ -1,4 +1,4 @@
-package com.zhangke.websocket;
+package com.zhangke.websocket.request;
 
 /**
  * WebSocket 响应数据接口
