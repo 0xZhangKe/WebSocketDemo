@@ -1,8 +1,6 @@
-package com.zhangke.websocket.request;
+package com.zhangke.websocket.response;
 
 import com.zhangke.websocket.SocketListener;
-import com.zhangke.websocket.request.ErrorResponse;
-import com.zhangke.websocket.request.Response;
 
 import java.util.ArrayList;
 import java.util.List;

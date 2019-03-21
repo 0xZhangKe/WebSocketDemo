@@ -1,6 +1,6 @@
 package com.zhangke.websocketdemo;
 
-import com.zhangke.websocket.request.Response;
+import com.zhangke.websocket.response.Response;
 
 /**
  * Created by ZhangKe on 2018/6/27.

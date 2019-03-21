@@ -1,4 +1,4 @@
-package com.zhangke.websocket.request;
+package com.zhangke.websocket.response;
 
 /**
  * 消息类型
