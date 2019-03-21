@@ -8,10 +8,10 @@ import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
 
-import com.zhangke.websocket.request.ErrorResponse;
-import com.zhangke.websocket.request.MessageType;
-import com.zhangke.websocket.request.Response;
-import com.zhangke.websocket.request.ResponseDelivery;
+import com.zhangke.websocket.response.ErrorResponse;
+import com.zhangke.websocket.response.MessageType;
+import com.zhangke.websocket.response.Response;
+import com.zhangke.websocket.response.ResponseDelivery;
 
 /**
  * WebSocket 基础服务

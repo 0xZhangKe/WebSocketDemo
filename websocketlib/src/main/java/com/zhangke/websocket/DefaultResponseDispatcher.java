@@ -1,8 +1,8 @@
 package com.zhangke.websocket;
 
-import com.zhangke.websocket.request.ErrorResponse;
-import com.zhangke.websocket.request.Response;
-import com.zhangke.websocket.request.ResponseDelivery;
+import com.zhangke.websocket.response.ErrorResponse;
+import com.zhangke.websocket.response.Response;
+import com.zhangke.websocket.response.ResponseDelivery;
 
 /**
  * 通用消息调度器，没做任何数据处理

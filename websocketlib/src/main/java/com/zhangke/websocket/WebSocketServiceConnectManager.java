@@ -9,9 +9,9 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 
-import com.zhangke.websocket.request.ErrorResponse;
-import com.zhangke.websocket.request.Response;
-import com.zhangke.websocket.request.ResponseDelivery;
+import com.zhangke.websocket.response.ErrorResponse;
+import com.zhangke.websocket.response.Response;
+import com.zhangke.websocket.response.ResponseDelivery;
 
 /**
  * 负责页面的 WebSocketService 绑定等操作

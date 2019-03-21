@@ -1,8 +1,8 @@
 package com.zhangke.websocket;
 
-import com.zhangke.websocket.request.ErrorResponse;
-import com.zhangke.websocket.request.Response;
-import com.zhangke.websocket.request.ResponseDelivery;
+import com.zhangke.websocket.response.ErrorResponse;
+import com.zhangke.websocket.response.Response;
+import com.zhangke.websocket.response.ResponseDelivery;
 
 /**
  * 用于处理及分发接收到的消息的接口，
