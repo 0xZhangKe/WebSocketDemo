@@ -31,7 +31,7 @@ public class WebSocketSetting {
     /**
      * 获取当前已设置的消息分发器
      */
-    public IResponseDispatcher getResponseProcessDelivery() {
+    public IResponseDispatcher getResponseDispatcher() {
         if (responseProcessDelivery == null) {
             responseProcessDelivery = new DefaultResponseDispatcher();
         }
