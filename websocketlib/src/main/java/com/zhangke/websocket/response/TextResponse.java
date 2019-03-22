@@ -1,5 +1,8 @@
 package com.zhangke.websocket.response;
 
+import java.util.ArrayDeque;
+import java.util.Queue;
+
 /**
  * 默认的消息响应事件包装类，
  * 只包含文本，不包含数据实体
@@ -7,24 +10,38 @@ package com.zhangke.websocket.response;
  */
 public class TextResponse implements Response<String> {
 
+    private static Queue<TextResponse> pool = new ArrayDeque<>(10);
+
     private String responseText;
 
-    public TextResponse(String responseText) {
-        this.responseText = responseText;
+    /**
+     * 获取一个 Response
+     */
+    public static TextResponse obtain() {
+        TextResponse response = pool.poll();
+        if (response == null) {
+            response = new TextResponse();
+        }
+        return response;
     }
 
-    public String getResponseText() {
+    /**
+     * 回收一个 Response
+     */
+    public static void release(TextResponse response) {
+        pool.offer(response);
+    }
+
+    private TextResponse() {
+    }
+
+    @Override
+    public String getResponseData() {
         return responseText;
     }
 
-    public void setResponseText(String responseText) {
-        this.responseText = responseText;
-    }
-
-    public String getResponseEntity() {
-        return null;
-    }
-
-    public void setResponseEntity(String responseEntity) {
+    @Override
+    public void setResponseData(String responseData) {
+        this.responseText = responseData;
     }
 }

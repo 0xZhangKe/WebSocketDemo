@@ -1,12 +1,33 @@
 package com.zhangke.websocket.response;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import com.zhangke.websocket.request.ByteArrayRequest;
+
+import java.nio.ByteBuffer;
+import java.util.ArrayDeque;
+import java.util.Queue;
 
 /**
  * 出现错误时的响应
  * Created by ZhangKe on 2018/6/25.
  */
 public class ErrorResponse {
+
+    private static Queue<ErrorResponse> CACHE_QUEUE = new ArrayDeque<>(10);
+
+    public static ErrorResponse obtain() {
+        ErrorResponse request = CACHE_QUEUE.poll();
+        if (request == null) {
+            request = new ErrorResponse();
+        }
+        return request;
+    }
+
+    public static void release(ErrorResponse request) {
+        CACHE_QUEUE.offer(request);
+    }
 
     /**
      * 1-WebSocket 未连接或已断开
@@ -23,11 +44,11 @@ public class ErrorResponse {
     /**
      * 发送的数据，可能为空
      */
-    private String requestText;
+    private Object requestData;
     /**
      * 响应的数据，可能为空
      */
-    private String responseText;
+    private Object responseData;
     /**
      * 错误描述，客户端可以通过这个字段来设置统一的错误提示等等
      */
@@ -71,20 +92,20 @@ public class ErrorResponse {
         this.cause = cause;
     }
 
-    public String getRequestText() {
-        return requestText;
+    public Object getRequestData() {
+        return requestData;
     }
 
-    public void setRequestText(String requestText) {
-        this.requestText = requestText;
+    public void setRequestData(Object requestData) {
+        this.requestData = requestData;
     }
 
-    public String getResponseText() {
-        return responseText;
+    public Object getResponseData() {
+        return responseData;
     }
 
-    public void setResponseText(String responseText) {
-        this.responseText = responseText;
+    public void setResponseData(Object responseData) {
+        this.responseData = responseData;
     }
 
     public String getDescription() {
@@ -103,6 +124,7 @@ public class ErrorResponse {
         this.reserved = reserved;
     }
 
+    @NonNull
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
@@ -116,16 +138,32 @@ public class ErrorResponse {
         builder.append("cause=");
         builder.append(cause.toString());
         builder.append(",");
-        if (!TextUtils.isEmpty(requestText)) {
-            builder.append("requestText=");
-            builder.append(requestText);
-            builder.append(",");
+        builder.append("requestData=");
+        String request;
+        if (requestData != null) {
+            if (requestData instanceof String) {
+                request = (String) requestData;
+            } else {
+                request = requestData.toString();
+            }
+        } else {
+            request = "null";
         }
-        if (!TextUtils.isEmpty(responseText)) {
-            builder.append("responseText=");
-            builder.append(responseText);
-            builder.append(",");
+        builder.append(request);
+        builder.append(",");
+        builder.append("responseData=");
+        String response;
+        if (responseData != null) {
+            if (responseData instanceof String) {
+                response = (String) responseData;
+            } else {
+                response = responseData.toString();
+            }
+        } else {
+            response = "null";
         }
+        builder.append(response);
+        builder.append(",");
         builder.append("description=");
         builder.append(description);
         builder.append(",");
