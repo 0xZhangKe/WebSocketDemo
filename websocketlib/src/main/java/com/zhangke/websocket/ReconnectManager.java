@@ -19,7 +19,7 @@ public class ReconnectManager {
 
     private static final String TAG = "WebSocketLib";
 
-    private WebSocketThread mWebSocketThread;
+    private WebSocketWrapper mWebSocketThread;
 
     /**
      * 是否正在重连
@@ -28,7 +28,7 @@ public class ReconnectManager {
     private volatile boolean destroyed;
     private final ExecutorService singleThreadPool = Executors.newSingleThreadExecutor();
 
-    ReconnectManager(WebSocketThread mWebSocketThread) {
+    ReconnectManager(WebSocketWrapper mWebSocketThread) {
         this.mWebSocketThread = mWebSocketThread;
         retrying = false;
         destroyed = false;

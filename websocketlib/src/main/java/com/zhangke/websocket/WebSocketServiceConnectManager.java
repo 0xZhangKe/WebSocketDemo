@@ -140,7 +140,7 @@ public class WebSocketServiceConnectManager {
             errorResponse.setRequestText(text);
             ResponseDelivery delivery = new ResponseDelivery();
             delivery.addListener(mSocketListener);
-            WebSocketSetting.getResponseProcessDelivery().onSendMessageError(errorResponse, delivery);
+            WebSocketSetting.getResponseDispatcher().onSendMessageError(errorResponse, delivery);
             if (!binding) {
                 bindTime = 0;
                 Log.d(TAG, String.format("WebSocketService 连接断开，开始第%s次重连", bindTime));
@@ -158,7 +158,7 @@ public class WebSocketServiceConnectManager {
             errorResponse.setCause(new Throwable("WebSocketService dose not bind!"));
             ResponseDelivery delivery = new ResponseDelivery();
             delivery.addListener(mSocketListener);
-            WebSocketSetting.getResponseProcessDelivery().onSendMessageError(errorResponse, delivery);
+            WebSocketSetting.getResponseDispatcher().onSendMessageError(errorResponse, delivery);
             if (!binding) {
                 bindTime = 0;
                 Log.d(TAG, String.format("WebSocketService 连接断开，开始第%s次重连", bindTime));

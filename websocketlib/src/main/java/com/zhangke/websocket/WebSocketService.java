@@ -19,7 +19,7 @@ import com.zhangke.websocket.response.ResponseDelivery;
  */
 public class WebSocketService extends Service implements SocketListener {
 
-    private WebSocketThread mWebSocketThread;
+    private WebSocketWrapper mWebSocketThread;
 
     private ResponseDelivery mResponseDelivery = new ResponseDelivery();
 
@@ -54,11 +54,11 @@ public class WebSocketService extends Service implements SocketListener {
     @Override
     public void onCreate() {
         super.onCreate();
-        mWebSocketThread = new WebSocketThread(WebSocketSetting.getConnectUrl());
+        mWebSocketThread = new WebSocketWrapper(WebSocketSetting.getConnectUrl());
         mWebSocketThread.setSocketListener(this);
         mWebSocketThread.start();
 
-        responseDispatcher = WebSocketSetting.getResponseProcessDelivery();
+        responseDispatcher = WebSocketSetting.getResponseDispatcher();
 
         //绑定监听网络变化广播
         if (WebSocketSetting.isReconnectWithNetworkChanged()) {

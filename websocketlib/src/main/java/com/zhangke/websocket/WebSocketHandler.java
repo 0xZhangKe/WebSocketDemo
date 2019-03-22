@@ -22,11 +22,11 @@ public class WebSocketHandler {
     }
 
     private WebSocketSetting mSetting;
-    private WebSocketThread mWebSocketThread;
+    private WebSocketWrapper mWebSocketThread;
 
     public void init(WebSocketSetting setting){
         this.mSetting = setting;
-        mWebSocketThread = new WebSocketThread(setting);
+        mWebSocketThread = new WebSocketWrapper(setting);
     }
 
 
