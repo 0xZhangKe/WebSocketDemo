@@ -33,20 +33,17 @@ public class ErrorResponse {
     /**
      * 构建一个 ErrorResponse
      */
-    public static ErrorResponse build(Request request, int type, Throwable tr) {
+    public static ErrorResponse build(Request request, int code, Throwable tr) {
         ErrorResponse errorResponse = obtain();
         errorResponse.setRequestData(request);
         errorResponse.setCause(tr);
-        errorResponse.setErrorCode(type);
+        errorResponse.setErrorCode(code);
         return errorResponse;
     }
 
     /**
-     * 1-WebSocket 未连接或已断开
-     * 2-WebSocketService 服务未绑定到当前 Activity/Fragment，或绑定失败
-     * 3-WebSocket 初始化未完成
-     * 11-数据获取成功，但是解析 JSON 失败
-     * 12-数据获取成功，但是服务器返回数据中的code值不正确
+     * 1-WebSocket 未连接或已断开；
+     * 2-未知错误。
      */
     private int errorCode;
     /**
