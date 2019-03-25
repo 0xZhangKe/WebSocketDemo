@@ -26,6 +26,7 @@ public class ReconnectManager {
      */
     private volatile boolean retrying;
     private volatile boolean destroyed;
+
     private final ExecutorService singleThreadPool = Executors.newSingleThreadExecutor();
 
     ReconnectManager(WebSocketWrapper mWebSocketThread) {
@@ -73,17 +74,6 @@ public class ReconnectManager {
                                 }
                             } else {
                                 break;
-                            }
-                            try {
-                                Thread.sleep(500);
-                            } catch (InterruptedException e) {
-                                Log.e(TAG, "retry()", e);
-                                if (destroyed = true) {
-                                    retrying = false;
-                                    return;
-                                } else {
-                                    Thread.currentThread().interrupt();
-                                }
                             }
                         }
                         retrying = false;

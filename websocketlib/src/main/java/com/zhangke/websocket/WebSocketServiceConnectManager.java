@@ -11,7 +11,7 @@ import android.util.Log;
 
 import com.zhangke.websocket.response.ErrorResponse;
 import com.zhangke.websocket.response.Response;
-import com.zhangke.websocket.response.ResponseDelivery;
+import com.zhangke.websocket.dispatcher.ResponseDelivery;
 
 /**
  * 负责页面的 WebSocketService 绑定等操作
