@@ -3,6 +3,8 @@ package com.zhangke.websocket.request;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import com.zhangke.websocket.util.TextUtil;
+
 import org.java_websocket.client.WebSocketClient;
 
 import java.util.ArrayDeque;
@@ -46,13 +48,18 @@ public class StringRequest implements Request<String> {
         client.send(requestText);
     }
 
+    @Override
+    public void release() {
+        release(this);
+    }
+
     @NonNull
     @Override
     public String toString() {
-        if (TextUtils.isEmpty(requestText)) {
-            return requestText;
-        }else{
-            return "[String,data is null]";
-        }
+        return String.format("@StringRequest%s,requestText:%s",
+                hashCode(),
+                TextUtil.isEmpty(requestText) ?
+                        "null" :
+                        requestText);
     }
 }

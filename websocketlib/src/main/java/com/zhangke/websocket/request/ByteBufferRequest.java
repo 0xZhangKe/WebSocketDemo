@@ -46,13 +46,18 @@ public class ByteBufferRequest implements Request<ByteBuffer> {
         client.send(this.data);
     }
 
+    @Override
+    public void release() {
+        release(this);
+    }
+
     @NonNull
     @Override
     public String toString() {
-        if (data != null) {
-            return "[ByteBuffer," + data.toString() + "]";
-        } else {
-            return "[ByteBuffer,data is null";
-        }
+        return String.format("[@ByteBufferRequest%s,ByteBuffer:%s]",
+                hashCode(),
+                data == null ?
+                        "null" :
+                        data.toString());
     }
 }

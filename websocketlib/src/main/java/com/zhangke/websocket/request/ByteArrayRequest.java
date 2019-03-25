@@ -45,13 +45,18 @@ public class ByteArrayRequest implements Request<byte[]> {
         client.send(this.data);
     }
 
+    @Override
+    public void release() {
+        release(this);
+    }
+
     @NonNull
     @Override
     public String toString() {
-        if (data != null) {
-            return "[byte[],length=" + data.length + "]";
-        } else {
-            return "[byte[],data is null";
-        }
+        return String.format("[@ByteArrayRequest%s,%s]",
+                hashCode(),
+                data == null ?
+                        "data:null" :
+                        "data.length:" + data.length);
     }
 }
