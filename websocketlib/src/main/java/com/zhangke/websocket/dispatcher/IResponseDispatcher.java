@@ -5,11 +5,19 @@ import com.zhangke.websocket.response.ErrorResponse;
 import com.zhangke.websocket.response.Response;
 
 /**
- * 用于处理及分发接收到的消息的接口，
+ * 消息分发器，用于处理及分发接收到的消息的接口，
  * 如果需要自定义事件的分发，实现这个类并设置到{@link WebSocketSetting} 中即可。
  * Created by ZhangKe on 2018/6/26.
  */
 public interface IResponseDispatcher {
+
+    /**
+     * 设置当前分发器是否使用子线程处理数据，
+     * true-接收到消息后将使用子线程处理数据，
+     * false-反之。
+     * 默认为 true
+     */
+    boolean processDataOnBackground();
 
     /**
      * 连接成功
