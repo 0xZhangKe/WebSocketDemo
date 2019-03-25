@@ -1,5 +1,9 @@
 package com.zhangke.websocket.response;
 
+import android.support.annotation.NonNull;
+
+import com.zhangke.websocket.util.TextUtil;
+
 import java.util.ArrayDeque;
 import java.util.Queue;
 
@@ -43,5 +47,13 @@ public class TextResponse implements Response<String> {
     @Override
     public void setResponseData(String responseData) {
         this.responseText = responseData;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return String.format("[@TextResponse%s->responseText:%s]",
+                hashCode(),
+                TextUtil.isEmpty(responseText) ? "null" : responseText);
     }
 }

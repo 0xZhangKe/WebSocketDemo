@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.zhangke.websocket.request.ByteArrayRequest;
+import com.zhangke.websocket.request.Request;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
@@ -17,7 +18,7 @@ public class ErrorResponse {
 
     private static Queue<ErrorResponse> CACHE_QUEUE = new ArrayDeque<>(10);
 
-    public static ErrorResponse obtain() {
+    private static ErrorResponse obtain() {
         ErrorResponse request = CACHE_QUEUE.poll();
         if (request == null) {
             request = new ErrorResponse();
@@ -27,6 +28,17 @@ public class ErrorResponse {
 
     public static void release(ErrorResponse request) {
         CACHE_QUEUE.offer(request);
+    }
+
+    /**
+     * 构建一个 ErrorResponse
+     */
+    public static ErrorResponse build(Request request, int type, Throwable tr) {
+        ErrorResponse errorResponse = obtain();
+        errorResponse.setRequestData(request);
+        errorResponse.setCause(tr);
+        errorResponse.setErrorCode(type);
+        return errorResponse;
     }
 
     /**
@@ -44,11 +56,11 @@ public class ErrorResponse {
     /**
      * 发送的数据，可能为空
      */
-    private Object requestData;
+    private Request requestData;
     /**
      * 响应的数据，可能为空
      */
-    private Object responseData;
+    private Response responseData;
     /**
      * 错误描述，客户端可以通过这个字段来设置统一的错误提示等等
      */
@@ -59,7 +71,8 @@ public class ErrorResponse {
      */
     private Object reserved;
 
-    public ErrorResponse() {
+    private ErrorResponse() {
+
     }
 
     /**
@@ -92,19 +105,19 @@ public class ErrorResponse {
         this.cause = cause;
     }
 
-    public Object getRequestData() {
+    public Request getRequestData() {
         return requestData;
     }
 
-    public void setRequestData(Object requestData) {
+    public void setRequestData(Request requestData) {
         this.requestData = requestData;
     }
 
-    public Object getResponseData() {
+    public Response getResponseData() {
         return responseData;
     }
 
-    public void setResponseData(Object responseData) {
+    public void setResponseData(Response responseData) {
         this.responseData = responseData;
     }
 
@@ -128,8 +141,7 @@ public class ErrorResponse {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("[");
-        builder.append("hashCode=");
+        builder.append("[@ErrorResponse");
         builder.append(hashCode());
         builder.append(",");
         builder.append("errorCode=");
@@ -141,11 +153,7 @@ public class ErrorResponse {
         builder.append("requestData=");
         String request;
         if (requestData != null) {
-            if (requestData instanceof String) {
-                request = (String) requestData;
-            } else {
-                request = requestData.toString();
-            }
+            request = requestData.toString();
         } else {
             request = "null";
         }
@@ -154,11 +162,7 @@ public class ErrorResponse {
         builder.append("responseData=");
         String response;
         if (responseData != null) {
-            if (responseData instanceof String) {
-                response = (String) responseData;
-            } else {
-                response = responseData.toString();
-            }
+            response = responseData.toString();
         } else {
             response = "null";
         }

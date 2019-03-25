@@ -1,5 +1,7 @@
 package com.zhangke.websocket.response;
 
+import android.support.annotation.NonNull;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -44,5 +46,13 @@ public class ByteBufferResponse implements Response<ByteBuffer> {
     @Override
     public void setResponseData(ByteBuffer responseData) {
         this.data = responseData;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return String.format("[@ByteBufferResponse%s->ByteBuffer:%s]",
+                hashCode(),
+                data == null ? "null" : data.toString());
     }
 }
