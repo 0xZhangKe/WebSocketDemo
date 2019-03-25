@@ -6,9 +6,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.TypeReference;
 import com.zhangke.websocket.response.ErrorResponse;
-import com.zhangke.websocket.IResponseDispatcher;
+import com.zhangke.websocket.dispatcher.IResponseDispatcher;
 import com.zhangke.websocket.response.Response;
-import com.zhangke.websocket.response.ResponseDelivery;
+import com.zhangke.websocket.dispatcher.ResponseDelivery;
 
 /**
  * Created by ZhangKe on 2018/6/27.
