@@ -1,5 +1,10 @@
 package com.zhangke.websocket;
 
+import com.zhangke.websocket.dispatcher.DefaultResponseDispatcher;
+import com.zhangke.websocket.dispatcher.IResponseDispatcher;
+
+import org.java_websocket.drafts.Draft;
+
 import java.net.Proxy;
 
 /**
@@ -8,10 +13,41 @@ import java.net.Proxy;
  */
 public class WebSocketSetting {
 
+    /**
+     * WebSocket 连接地址
+     */
     private String connectUrl;
+    /**
+     * 消息处理分发器
+     */
     private IResponseDispatcher responseProcessDelivery;
+    /**
+     * 设置是否使用子线程处理数据，
+     * true-接收到消息后将使用子线程处理数据，
+     * false-反之。
+     * 默认为 true
+     */
+    private boolean processDataOnBackground;
+    /**
+     * 设置网络连接变化后是否自动重连。</br>
+     * 如果设置 true 则需要注册广播：{@link NetworkChangedReceiver}，</br>
+     * 并添加 ACCESS_NETWORK_STATE 权限。
+     */
     private boolean reconnectWithNetworkChanged;
+    /**
+     * 代理
+     */
     private Proxy mProxy;
+    /**
+     * 协议实现，默认为 {@link org.java_websocket.drafts.Draft_6455}，
+     * 框架也只提供了这一个实现，一般情况不需要设置。
+     * 特殊需求可以自定义继承 {@link Draft} 的类
+     */
+    private Draft draft;
+    /**
+     * 重连次数，默认为：10 次
+     */
+    private int reconnectFrequency = 10;
 
     /**
      * 获取 WebSocket 链接地址
@@ -49,11 +85,6 @@ public class WebSocketSetting {
         return this.reconnectWithNetworkChanged;
     }
 
-    /**
-     * 设置网络连接变化后是否自动重连。</br>
-     * 如果设置 true 则需要注册广播：{@link NetworkChangedReceiver}，</br>
-     * 并添加 ACCESS_NETWORK_STATE 权限。
-     */
     public void setReconnectWithNetworkChanged(boolean reconnectWithNetworkChanged) {
         this.reconnectWithNetworkChanged = reconnectWithNetworkChanged;
     }
@@ -64,5 +95,29 @@ public class WebSocketSetting {
 
     public void setProxy(Proxy mProxy) {
         this.mProxy = mProxy;
+    }
+
+    public Draft getDraft() {
+        return draft;
+    }
+
+    public void setDraft(Draft draft) {
+        this.draft = draft;
+    }
+
+    public boolean processDataOnBackground() {
+        return processDataOnBackground;
+    }
+
+    public void setProcessDataOnBackground(boolean processDataOnBackground) {
+        this.processDataOnBackground = processDataOnBackground;
+    }
+
+    public int getReconnectFrequency() {
+        return reconnectFrequency;
+    }
+
+    public void setReconnectFrequency(int reconnectFrequency) {
+        this.reconnectFrequency = reconnectFrequency;
     }
 }
