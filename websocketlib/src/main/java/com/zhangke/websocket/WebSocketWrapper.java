@@ -5,8 +5,10 @@ import android.text.TextUtils;
 import com.zhangke.websocket.request.Request;
 import com.zhangke.websocket.response.ByteBufferResponse;
 import com.zhangke.websocket.response.TextResponse;
+import com.zhangke.websocket.util.LogUtil;
 
 import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ServerHandshake;
@@ -61,7 +63,13 @@ public class WebSocketWrapper {
                     if (TextUtils.isEmpty(mSetting.getConnectUrl())) {
                         throw new RuntimeException("WebSocket connect url is empty!");
                     }
-                    mWebSocket = new WebSocketClient(new URI(mSetting.getConnectUrl()), new Draft_6455()) {
+                    Draft draft = mSetting.getDraft();
+                    if (draft == null) {
+                        draft = new Draft_6455();
+                    }
+                    mWebSocket = new WebSocketClient(
+                            new URI(mSetting.getConnectUrl()),
+                            draft) {
 
                         @Override
                         public void onOpen(ServerHandshake handShakeData) {
@@ -92,6 +100,7 @@ public class WebSocketWrapper {
                                 TextResponse textResponse = TextResponse.obtain();
                                 textResponse.setResponseData(message);
                                 mSocketListener.onReceivedData(textResponse);
+                                //todo 在合适的时候回收 Response
                             }
                         }
 
@@ -216,6 +225,7 @@ public class WebSocketWrapper {
                 connectStatus = 0;
                 LogUtil.e(TAG, "ws is disconnected, send failed:" + request.toString(), e);
                 if (mSocketListener != null) {
+                    //not connect
                     mSocketListener.onSendDataError(request, 0, e);
                     mSocketListener.onDisconnect();
                 }
@@ -223,12 +233,16 @@ public class WebSocketWrapper {
                 connectStatus = 0;
                 LogUtil.e(TAG, "Exception,send failed:" + request.toString(), e);
                 if (mSocketListener != null) {
+                    //unknown error
                     mSocketListener.onSendDataError(request, 1, e);
                 }
+            } finally {
+                request.release();
             }
         } else {
             LogUtil.e(TAG, "WebSocket not connect,send failed:" + request.toString());
             if (mSocketListener != null) {
+                //not connect
                 mSocketListener.onSendDataError(request, 0, null);
             }
         }
