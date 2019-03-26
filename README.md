@@ -519,4 +519,4 @@ WebSocketThread 讲完了我在讲一下 WebSocketService ，也是比较重要�
 
 我的微信：
 
-![微信二维码](image/qr.png)
+![微信二维码](image/qrcode_for_account.jpg)
