@@ -512,5 +512,11 @@ WebSocketThread 讲完了我在讲一下 WebSocketService ，也是比较重要�
 
 
 好了就说到这里了，具体的一些细节直接看代码就行，还是很清晰的，要是有什么疑问直接问我也行。
+
+另外，欢迎关注我的个人公众号，我会不定期发一些干货文章~
+
+![微信二维码](image/qrcode_for_gsubscription.jpg)
+
 我的微信：
+
 ![微信二维码](image/qr.png)
