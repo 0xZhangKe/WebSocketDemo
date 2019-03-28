@@ -40,8 +40,7 @@ public class EngineThread extends Thread {
                     entity.dispatcher.onSendMessageError(entity.errorResponse,
                             entity.delivery);
                 } else {
-                    entity.dispatcher.onMessageResponse(entity.response,
-                            entity.delivery);
+                    entity.response.onResponse(entity.dispatcher, entity.delivery);
                 }
                 ResponseProcessEngine.EngineEntity.release(entity);
             } catch (InterruptedException e) {
