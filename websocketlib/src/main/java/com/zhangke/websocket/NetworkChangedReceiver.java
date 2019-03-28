@@ -17,13 +17,13 @@ public class NetworkChangedReceiver extends BroadcastReceiver {
 
     private static final String LOGTAG = "NetworkChangedReceiver";
 
-    private WebSocketService socketService;
+    private WebSocketManager webSocketManager;
 
     public NetworkChangedReceiver() {
     }
 
-    public NetworkChangedReceiver(WebSocketService socketService) {
-        this.socketService = socketService;
+    public NetworkChangedReceiver(WebSocketManager webSocketManager) {
+        this.webSocketManager = webSocketManager;
     }
 
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
@@ -41,8 +41,8 @@ public class NetworkChangedReceiver extends BroadcastReceiver {
                     } else if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
                         Log.i(LOGTAG, "网络连接发生变化，当前移动连接可用，正在尝试重连。");
                     }
-                    if (socketService != null) {
-                        socketService.reconnect();
+                    if (webSocketManager != null) {
+                        webSocketManager.reconnect();
                     }
                 } else {
                     Log.i(LOGTAG, "当前没有可用网络");
