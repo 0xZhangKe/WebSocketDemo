@@ -6,6 +6,7 @@ import com.zhangke.websocket.dispatcher.IResponseDispatcher;
 import org.java_websocket.drafts.Draft;
 
 import java.net.Proxy;
+import java.util.Map;
 
 /**
  * WebSocket 使用配置
@@ -25,7 +26,8 @@ public class WebSocketSetting {
      * 设置是否使用子线程处理数据，
      * true-接收到消息后将使用子线程处理数据，
      * false-反之。
-     * 默认为 true
+     * 默认为 true，
+     * 使用子线程处理完消息后会自动切换到主线程。
      */
     private boolean processDataOnBackground;
     /**
@@ -44,6 +46,15 @@ public class WebSocketSetting {
      * 特殊需求可以自定义继承 {@link Draft} 的类
      */
     private Draft draft;
+    /**
+     * 设置连接的请求头
+     */
+    private Map<String, String> httpHeaders;
+    /**
+     * 设置连接超时时间(单位：毫秒)，
+     * 默认为 0（不设置超时时间）
+     */
+    private int connectTimeout = 0;
     /**
      * 重连次数，默认为：10 次
      */
@@ -119,5 +130,21 @@ public class WebSocketSetting {
 
     public void setReconnectFrequency(int reconnectFrequency) {
         this.reconnectFrequency = reconnectFrequency;
+    }
+
+    public Map<String, String> getHttpHeaders() {
+        return httpHeaders;
+    }
+
+    public void setHttpHeaders(Map<String, String> httpHeaders) {
+        this.httpHeaders = httpHeaders;
+    }
+
+    public int getConnectTimeout() {
+        return connectTimeout;
+    }
+
+    public void setConnectTimeout(int connectTimeout) {
+        this.connectTimeout = connectTimeout;
     }
 }
