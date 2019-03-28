@@ -3,6 +3,10 @@ package com.zhangke.websocket;
 import com.zhangke.websocket.request.Request;
 import com.zhangke.websocket.response.Response;
 
+import org.java_websocket.framing.Framedata;
+
+import java.nio.ByteBuffer;
+
 /**
  * {@link WebSocketWrapper} 监听器
  * <p>
@@ -27,15 +31,14 @@ public interface SocketWrapperListener {
 
     /**
      * 数据发送失败
+     *
      * @param request 发送的请求
-     * @param type 失败类型：0-未连接，1-未知错误
+     * @param type    失败类型：0-未连接，1-未知错误
      */
     void onSendDataError(Request request, int type, Throwable tr);
 
     /**
      * 接收到消息
-     *
-     * @param response 消息
      */
-    void onReceivedData(Response response);
+    void onMessage(Response message);
 }
