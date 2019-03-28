@@ -4,17 +4,23 @@ import android.text.TextUtils;
 
 import com.zhangke.websocket.request.Request;
 import com.zhangke.websocket.response.ByteBufferResponse;
+import com.zhangke.websocket.response.Response;
+import com.zhangke.websocket.response.ResponseFactory;
 import com.zhangke.websocket.response.TextResponse;
 import com.zhangke.websocket.util.LogUtil;
 
+import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
+import org.java_websocket.framing.Framedata;
+import org.java_websocket.framing.PingFrame;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.Map;
 
 /**
  * 负责 WebSocket 连接的建立，数据发送，监听数据等。
@@ -67,78 +73,15 @@ public class WebSocketWrapper {
                     if (draft == null) {
                         draft = new Draft_6455();
                     }
-                    mWebSocket = new WebSocketClient(
+                    int connectTimeOut = mSetting.getConnectTimeout();
+                    if (connectTimeOut <= 0) {
+                        connectTimeOut = 0;
+                    }
+                    mWebSocket = new MyWebSocketClient(
                             new URI(mSetting.getConnectUrl()),
-                            draft) {
-
-                        @Override
-                        public void onOpen(ServerHandshake handShakeData) {
-                            if (destroyed) {
-                                checkDestroy();
-                                return;
-                            }
-                            connectStatus = 2;
-                            LogUtil.i(TAG, "WebSocket connect success");
-                            if (needClose) {
-                                disConnect();
-                            } else {
-                                if (mSocketListener != null) {
-                                    mSocketListener.onConnected();
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onMessage(String message) {
-                            if (destroyed) {
-                                checkDestroy();
-                                return;
-                            }
-                            connectStatus = 2;
-                            LogUtil.i(TAG, "WebSocket received string message：" + message);
-                            if (mSocketListener != null) {
-                                TextResponse textResponse = TextResponse.obtain();
-                                textResponse.setResponseData(message);
-                                mSocketListener.onReceivedData(textResponse);
-                                //todo 在合适的时候回收 Response
-                            }
-                        }
-
-                        @Override
-                        public void onMessage(ByteBuffer bytes) {
-                            if (destroyed) {
-                                checkDestroy();
-                                return;
-                            }
-                            connectStatus = 2;
-                            LogUtil.i(TAG, "WebSocket received ByteBuffer message：" + bytes.array().length);
-                            if (mSocketListener != null) {
-                                ByteBufferResponse byteBufferResponse = ByteBufferResponse.obtain();
-                                byteBufferResponse.setResponseData(bytes);
-                                mSocketListener.onReceivedData(byteBufferResponse);
-                            }
-                        }
-
-                        @Override
-                        public void onClose(int code, String reason, boolean remote) {
-                            connectStatus = 0;
-                            LogUtil.d(TAG, "WebSocket disconnected");
-                            if (mSocketListener != null) {
-                                mSocketListener.onDisconnect();
-                            }
-                            checkDestroy();
-                        }
-
-                        @Override
-                        public void onError(Exception ex) {
-                            if (destroyed) {
-                                checkDestroy();
-                                return;
-                            }
-                            LogUtil.e(TAG, "WebSocketClient#onError(Exception)", ex);
-                        }
-                    };
-
+                            draft,
+                            mSetting.getHttpHeaders(),
+                            connectTimeOut);
                     LogUtil.i(TAG, "WebSocket start connect...");
                     if (mSetting.getProxy() != null) {
                         mWebSocket.setProxy(mSetting.getProxy());
@@ -162,20 +105,6 @@ public class WebSocketWrapper {
                 if (mSocketListener != null) {
                     mSocketListener.onConnectFailed(e);
                 }
-            }
-        }
-    }
-
-    private void checkDestroy() {
-        if (destroyed) {
-            try {
-                if (mWebSocket != null && !mWebSocket.isClosed()) {
-                    mWebSocket.close();
-                }
-                releaseResource();
-                connectStatus = 0;
-            } catch (Throwable e) {
-                LogUtil.e(TAG, "checkDestroy(WebSocketClient)", e);
             }
         }
     }
@@ -250,6 +179,9 @@ public class WebSocketWrapper {
 
     /**
      * 获取连接状态
+     * 0-未连接
+     * 1-正在连接
+     * 2-已连接
      */
     int getConnectState() {
         return connectStatus;
@@ -267,10 +199,175 @@ public class WebSocketWrapper {
         releaseResource();
     }
 
+    private void checkDestroy() {
+        if (destroyed) {
+            try {
+                if (mWebSocket != null && !mWebSocket.isClosed()) {
+                    mWebSocket.close();
+                }
+                releaseResource();
+                connectStatus = 0;
+            } catch (Throwable e) {
+                LogUtil.e(TAG, "checkDestroy(WebSocketClient)", e);
+            }
+        }
+    }
+
     private void releaseResource() {
         if (mSocketListener != null) {
             mSocketListener = null;
         }
     }
 
+    private void onWSCallbackOpen(ServerHandshake handshakeData) {
+        if (destroyed) {
+            checkDestroy();
+            return;
+        }
+        connectStatus = 2;
+        LogUtil.i(TAG, "WebSocket connect success");
+        if (needClose) {
+            disConnect();
+        } else {
+            if (mSocketListener != null) {
+                mSocketListener.onConnected();
+            }
+        }
+    }
+
+    private void onWSCallbackMessage(String message) {
+        if (destroyed) {
+            checkDestroy();
+            return;
+        }
+        connectStatus = 2;
+        if (mSocketListener != null) {
+            Response<String> response = ResponseFactory.createTextResponse();
+            response.setResponseData(message);
+            LogUtil.i(TAG, "WebSocket received message:" + response.toString());
+            mSocketListener.onMessage(response);
+        }
+    }
+
+    private void onWSCallbackMessage(ByteBuffer bytes) {
+        if (destroyed) {
+            checkDestroy();
+            return;
+        }
+        connectStatus = 2;
+        if (mSocketListener != null) {
+            Response<ByteBuffer> response = ResponseFactory.createByteBufferResponse();
+            response.setResponseData(bytes);
+            LogUtil.i(TAG, "WebSocket received message:" + response.toString());
+            mSocketListener.onMessage(response);
+        }
+    }
+
+    private void onWSCallbackWebsocketPing(Framedata f) {
+        if (destroyed) {
+            checkDestroy();
+            return;
+        }
+        connectStatus = 2;
+        if (mSocketListener != null) {
+            Response<Framedata> response = ResponseFactory.createPingResponse();
+            response.setResponseData(f);
+            LogUtil.i(TAG, "WebSocket received ping:" + response.toString());
+            mSocketListener.onMessage(response);
+        }
+    }
+
+    private void onWSCallbackWebsocketPong(Framedata f) {
+        if (destroyed) {
+            checkDestroy();
+            return;
+        }
+        connectStatus = 2;
+        if (mSocketListener != null) {
+            Response<Framedata> response = ResponseFactory.createPongResponse();
+            response.setResponseData(f);
+            LogUtil.i(TAG, "WebSocket received pong:" + response.toString());
+            mSocketListener.onMessage(response);
+        }
+    }
+
+    private void onWSCallbackClose(int code, String reason, boolean remote) {
+        connectStatus = 0;
+        LogUtil.d(TAG, String.format("WebSocket closed!code=%s,reason:%s,remote:%s",
+                code,
+                reason,
+                remote));
+        if (mSocketListener != null) {
+            mSocketListener.onDisconnect();
+        }
+        checkDestroy();
+    }
+
+    private void onWSCallbackError(Exception ex) {
+        if (destroyed) {
+            checkDestroy();
+            return;
+        }
+        LogUtil.e(TAG, "WebSocketClient#onError(Exception)", ex);
+    }
+
+    private class MyWebSocketClient extends WebSocketClient {
+
+        public MyWebSocketClient(URI serverUri) {
+            super(serverUri);
+        }
+
+        public MyWebSocketClient(URI serverUri, Draft protocolDraft) {
+            super(serverUri, protocolDraft);
+        }
+
+        public MyWebSocketClient(URI serverUri, Map<String, String> httpHeaders) {
+            super(serverUri, httpHeaders);
+        }
+
+        public MyWebSocketClient(URI serverUri, Draft protocolDraft, Map<String, String> httpHeaders) {
+            super(serverUri, protocolDraft, httpHeaders);
+        }
+
+        public MyWebSocketClient(URI serverUri, Draft protocolDraft, Map<String, String> httpHeaders, int connectTimeout) {
+            super(serverUri, protocolDraft, httpHeaders, connectTimeout);
+        }
+
+        @Override
+        public void onOpen(ServerHandshake handshakeData) {
+            onWSCallbackOpen(handshakeData);
+        }
+
+        @Override
+        public void onMessage(String message) {
+            onWSCallbackMessage(message);
+        }
+
+        @Override
+        public void onMessage(ByteBuffer bytes) {
+            onWSCallbackMessage(bytes);
+        }
+
+        @Override
+        public void onWebsocketPing(WebSocket conn, Framedata f) {
+            super.onWebsocketPing(conn, f);
+            onWSCallbackWebsocketPing(f);
+        }
+
+        @Override
+        public void onWebsocketPong(WebSocket conn, Framedata f) {
+            super.onWebsocketPong(conn, f);
+            onWSCallbackWebsocketPong(f);
+        }
+
+        @Override
+        public void onClose(int code, String reason, boolean remote) {
+            onWSCallbackClose(code, reason, remote);
+        }
+
+        @Override
+        public void onError(Exception ex) {
+            onWSCallbackError(ex);
+        }
+    }
 }
