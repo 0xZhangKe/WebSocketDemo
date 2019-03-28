@@ -14,11 +14,6 @@ import java.nio.ByteBuffer;
 public class DefaultResponseDispatcher implements IResponseDispatcher {
 
     @Override
-    public boolean processDataOnBackground() {
-        return false;
-    }
-
-    @Override
     public void onConnected(ResponseDelivery delivery) {
         delivery.onConnected();
     }
