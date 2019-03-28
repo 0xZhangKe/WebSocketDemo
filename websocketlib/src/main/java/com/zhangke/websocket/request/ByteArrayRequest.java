@@ -4,9 +4,6 @@ import android.support.annotation.NonNull;
 
 import org.java_websocket.client.WebSocketClient;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
-
 /**
  * byte[] 类型的请求
  * <p>
@@ -14,18 +11,7 @@ import java.util.Queue;
  */
 public class ByteArrayRequest implements Request<byte[]> {
 
-    private static Queue<ByteArrayRequest> CACHE_QUEUE = new ArrayDeque<>(10);
-
-    public static ByteArrayRequest obtain() {
-        ByteArrayRequest request = CACHE_QUEUE.poll();
-        if (request == null) {
-            request = new ByteArrayRequest();
-        }
-        return request;
-    }
-
-    public static void release(ByteArrayRequest request) {
-        CACHE_QUEUE.offer(request);
+    ByteArrayRequest() {
     }
 
     private byte[] data;
@@ -47,7 +33,7 @@ public class ByteArrayRequest implements Request<byte[]> {
 
     @Override
     public void release() {
-        release(this);
+        RequestFactory.releaseByteArrayRequest(this);
     }
 
     @NonNull
