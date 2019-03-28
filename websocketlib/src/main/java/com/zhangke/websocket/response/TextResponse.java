@@ -1,8 +1,10 @@
 package com.zhangke.websocket.response;
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
-import com.zhangke.websocket.util.TextUtil;
+import com.zhangke.websocket.dispatcher.IResponseDispatcher;
+import com.zhangke.websocket.dispatcher.ResponseDelivery;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -14,29 +16,9 @@ import java.util.Queue;
  */
 public class TextResponse implements Response<String> {
 
-    private static Queue<TextResponse> pool = new ArrayDeque<>(10);
-
     private String responseText;
 
-    /**
-     * 获取一个 Response
-     */
-    public static TextResponse obtain() {
-        TextResponse response = pool.poll();
-        if (response == null) {
-            response = new TextResponse();
-        }
-        return response;
-    }
-
-    /**
-     * 回收一个 Response
-     */
-    public static void release(TextResponse response) {
-        pool.offer(response);
-    }
-
-    private TextResponse() {
+    TextResponse() {
     }
 
     @Override
@@ -49,11 +31,24 @@ public class TextResponse implements Response<String> {
         this.responseText = responseData;
     }
 
+    @Override
+    public void onResponse(IResponseDispatcher dispatcher, ResponseDelivery delivery) {
+        dispatcher.onMessageResponse(responseText, delivery);
+        release();
+    }
+
     @NonNull
     @Override
     public String toString() {
         return String.format("[@TextResponse%s->responseText:%s]",
                 hashCode(),
-                TextUtil.isEmpty(responseText) ? "null" : responseText);
+                TextUtils.isEmpty(responseText) ?
+                        "null" :
+                        responseText);
+    }
+
+    @Override
+    public void release() {
+        ResponseFactory.releaseTextResponse(this);
     }
 }
