@@ -1,17 +1,10 @@
 package com.zhangke.websocket.dispatcher;
 
-import android.os.Handler;
-import android.os.Looper;
-
 import com.zhangke.websocket.response.ErrorResponse;
 import com.zhangke.websocket.response.Response;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 /**
  * 响应消息处理类
