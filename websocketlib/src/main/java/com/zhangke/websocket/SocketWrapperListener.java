@@ -3,10 +3,6 @@ package com.zhangke.websocket;
 import com.zhangke.websocket.request.Request;
 import com.zhangke.websocket.response.Response;
 
-import org.java_websocket.framing.Framedata;
-
-import java.nio.ByteBuffer;
-
 /**
  * {@link WebSocketWrapper} 监听器
  * <p>
