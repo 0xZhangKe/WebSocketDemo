@@ -1,10 +1,16 @@
 package com.zhangke.websocket;
 
+import com.zhangke.websocket.request.Request;
 import com.zhangke.websocket.response.ErrorResponse;
 import com.zhangke.websocket.response.Response;
 
+import org.java_websocket.framing.Framedata;
+
+import java.nio.ByteBuffer;
+
 /**
- * WebSocket监听器
+ * WebSocket 监听器,
+ * for user
  * Created by ZhangKe on 2018/6/8.
  */
 public interface SocketListener {
@@ -16,23 +22,38 @@ public interface SocketListener {
 
     /**
      * 连接失败
-     *
-     * @param cause 失败原因
      */
-    void onConnectError(Throwable cause);
+    void onConnectFailed(Throwable e);
 
     /**
      * 连接断开
      */
-    void onDisconnected();
+    void onDisconnect();
 
     /**
-     * 接收到消息
+     * 数据发送失败
+     *
+     * @param errorResponse 失败响应
      */
-    void onMessageResponse(Response message);
+    void onSendDataError(ErrorResponse errorResponse);
 
     /**
-     * 消息发送失败或接受到错误消息等等
+     * 接收到文本消息
      */
-    void onSendMessageError(ErrorResponse error);
+    void onMessage(String message);
+
+    /**
+     * 接收到二进制消息
+     */
+    void onMessage(ByteBuffer bytes);
+
+    /**
+     * 接收到 ping
+     */
+    void onPing(Framedata framedata);
+
+    /**
+     * 接收到 pong
+     */
+    void onPong(Framedata framedata);
 }
