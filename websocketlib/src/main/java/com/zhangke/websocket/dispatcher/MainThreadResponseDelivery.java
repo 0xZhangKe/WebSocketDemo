@@ -1,14 +1,27 @@
 package com.zhangke.websocket.dispatcher;
 
+import android.text.TextUtils;
+
 import com.zhangke.websocket.SocketListener;
 import com.zhangke.websocket.response.ErrorResponse;
-import com.zhangke.websocket.response.Response;
 
+import org.java_websocket.framing.Framedata;
+
+import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
+import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.BYTE_BUFFER_MSG;
+import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.CONNECTED;
+import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.CONNECT_FAILED;
+import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.DISCONNECT;
+import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.NON;
+import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.PING;
+import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.PONG;
+import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.SEND_ERROR;
+import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.STRING_MSG;
 import static com.zhangke.websocket.util.ThreadUtil.checkMainThread;
 import static com.zhangke.websocket.util.ThreadUtil.runOnMainThread;
 
@@ -34,6 +47,7 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
     public MainThreadResponseDelivery() {
     }
 
+    @Override
     public void addListener(SocketListener listener) {
         if (listener == null) {
             return;
@@ -45,6 +59,7 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
         }
     }
 
+    @Override
     public void removeListener(SocketListener listener) {
         if (listener == null || isEmpty()) {
             return;
@@ -69,84 +84,155 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
             }
         } else {
             CallbackRunnable callbackRunnable = getRunnable();
-            callbackRunnable.type = 0;
+            callbackRunnable.type = CONNECTED;
             runOnMainThread(callbackRunnable);
         }
     }
 
     @Override
-    public void onConnectError(final Throwable cause) {
+    public void onConnectFailed(Throwable cause) {
         if (isEmpty()) {
             return;
         }
         if (checkMainThread()) {
             synchronized (LISTENER_BLOCK) {
                 for (SocketListener listener : mSocketListenerList) {
-                    listener.onConnectError(cause);
+                    listener.onConnectFailed(cause);
                 }
             }
         } else {
             CallbackRunnable callbackRunnable = getRunnable();
-            callbackRunnable.type = 1;
+            callbackRunnable.type = CONNECT_FAILED;
             callbackRunnable.connectErrorCause = cause;
             runOnMainThread(callbackRunnable);
         }
     }
 
     @Override
-    public void onDisconnected() {
+    public void onDisconnect() {
         if (isEmpty()) {
             return;
         }
         if (checkMainThread()) {
             synchronized (LISTENER_BLOCK) {
                 for (SocketListener listener : mSocketListenerList) {
-                    listener.onDisconnected();
+                    listener.onDisconnect();
                 }
             }
         } else {
             CallbackRunnable callbackRunnable = getRunnable();
-            callbackRunnable.type = 2;
+            callbackRunnable.type = DISCONNECT;
             runOnMainThread(callbackRunnable);
         }
     }
 
     @Override
-    public void onMessageResponse(final Response message) {
+    public void onSendDataError(ErrorResponse errorResponse) {
+        if (isEmpty() || errorResponse == null) {
+            return;
+        }
+        if (checkMainThread()) {
+            synchronized (LISTENER_BLOCK) {
+                for (SocketListener listener : mSocketListenerList) {
+                    listener.onSendDataError(errorResponse);
+                }
+            }
+        } else {
+            CallbackRunnable callbackRunnable = getRunnable();
+            callbackRunnable.type = SEND_ERROR;
+            callbackRunnable.errorResponse = errorResponse;
+            runOnMainThread(callbackRunnable);
+        }
+    }
+
+    @Override
+    public void onMessage(String message) {
         if (isEmpty() || message == null) {
             return;
         }
         if (checkMainThread()) {
             synchronized (LISTENER_BLOCK) {
                 for (SocketListener listener : mSocketListenerList) {
-                    listener.onMessageResponse(message);
+                    listener.onMessage(message);
                 }
             }
         } else {
             CallbackRunnable callbackRunnable = getRunnable();
-            callbackRunnable.type = 3;
-            callbackRunnable.response = message;
+            callbackRunnable.type = STRING_MSG;
+            callbackRunnable.textResponse = message;
             runOnMainThread(callbackRunnable);
         }
     }
 
     @Override
-    public void onSendMessageError(final ErrorResponse message) {
-        if (isEmpty() || message == null) {
+    public void onMessage(ByteBuffer bytes) {
+        if (isEmpty() || bytes == null) {
             return;
         }
         if (checkMainThread()) {
             synchronized (LISTENER_BLOCK) {
                 for (SocketListener listener : mSocketListenerList) {
-                    listener.onSendMessageError(message);
+                    listener.onMessage(bytes);
                 }
             }
         } else {
             CallbackRunnable callbackRunnable = getRunnable();
-            callbackRunnable.type = 4;
-            callbackRunnable.errorResponse = message;
+            callbackRunnable.type = BYTE_BUFFER_MSG;
+            callbackRunnable.byteResponse = bytes;
             runOnMainThread(callbackRunnable);
         }
+    }
+
+    @Override
+    public void onPing(Framedata framedata) {
+        if (isEmpty()) {
+            return;
+        }
+        if (checkMainThread()) {
+            synchronized (LISTENER_BLOCK) {
+                for (SocketListener listener : mSocketListenerList) {
+                    listener.onPing(framedata);
+                }
+            }
+        } else {
+            CallbackRunnable callbackRunnable = getRunnable();
+            callbackRunnable.type = PING;
+            callbackRunnable.framedataResponse = framedata;
+            runOnMainThread(callbackRunnable);
+        }
+    }
+
+    @Override
+    public void onPong(Framedata framedata) {
+        if (isEmpty()) {
+            return;
+        }
+        if (checkMainThread()) {
+            synchronized (LISTENER_BLOCK) {
+                for (SocketListener listener : mSocketListenerList) {
+                    listener.onPong(framedata);
+                }
+            }
+        } else {
+            CallbackRunnable callbackRunnable = getRunnable();
+            callbackRunnable.type = PONG;
+            callbackRunnable.framedataResponse = framedata;
+            runOnMainThread(callbackRunnable);
+        }
+    }
+
+    @Override
+    public void clear() {
+        if (!mSocketListenerList.isEmpty()) {
+            synchronized (LISTENER_BLOCK) {
+                mSocketListenerList.clear();
+            }
+        }
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return mSocketListenerList.isEmpty();
     }
 
     private CallbackRunnable getRunnable() {
@@ -160,81 +246,94 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
         return runnable;
     }
 
-    @Override
-    public boolean isEmpty() {
-        return mSocketListenerList.isEmpty();
+    enum RUNNABLE_TYPE {
+        NON,//未设置
+        CONNECTED,//连接成功
+        CONNECT_FAILED,//连接失败
+        DISCONNECT,//连接断开
+        SEND_ERROR,//数据发送失败
+        STRING_MSG,//接收到 String 数据
+        BYTE_BUFFER_MSG,//接收到 ByteBuffer 数据
+        PING,//接收到 Ping
+        PONG//接收到 Pong
     }
 
     private static class CallbackRunnable implements Runnable {
 
         List<SocketListener> mSocketListenerList = new ArrayList<>();
-        Response response;
+
         ErrorResponse errorResponse;
         Throwable connectErrorCause;
-        /**
-         * 0-连接成功；
-         * 1-连接失败；
-         * 2-连接断开；
-         * 3-接收到数据；
-         * 4-数据发送失败
-         */
-        int type = -1;
+        String textResponse;
+        ByteBuffer byteResponse;
+        Framedata framedataResponse;
+
+        RUNNABLE_TYPE type = NON;
 
         @Override
         public void run() {
             try {
-                if (type == -1 ||
+                if (type == NON ||
                         mSocketListenerList == null ||
                         mSocketListenerList.isEmpty()) {
                     return;
                 }
-                if (type == 1 && connectErrorCause == null) return;
-                if (type == 3 && response == null) return;
-                if (type == 4 && errorResponse == null) return;
+                //check null
+                if (type == CONNECT_FAILED && connectErrorCause == null) return;
+                if (type == SEND_ERROR && errorResponse == null) return;
+                if (type == STRING_MSG && TextUtils.isEmpty(textResponse)) return;
+                if (type == BYTE_BUFFER_MSG && byteResponse == null) return;
+                if (type == PING && framedataResponse == null) return;
+                if (type == PONG && framedataResponse == null) return;
                 synchronized (LISTENER_BLOCK) {
                     switch (type) {
-                        case 0:
-                            response = null;
-                            errorResponse = null;
-                            connectErrorCause = null;
+                        case CONNECTED:
                             for (SocketListener listener : mSocketListenerList) {
                                 listener.onConnected();
                             }
                             break;
-                        case 1:
-                            response = null;
-                            errorResponse = null;
+                        case CONNECT_FAILED:
                             for (SocketListener listener : mSocketListenerList) {
-                                listener.onConnectError(connectErrorCause);
-                            }
-                            connectErrorCause = null;
-                            break;
-                        case 2:
-                            response = null;
-                            errorResponse = null;
-                            connectErrorCause = null;
-                            for (SocketListener listener : mSocketListenerList) {
-                                listener.onDisconnected();
+                                listener.onConnectFailed(connectErrorCause);
                             }
                             break;
-                        case 3:
-                            errorResponse = null;
-                            connectErrorCause = null;
+                        case DISCONNECT:
                             for (SocketListener listener : mSocketListenerList) {
-                                listener.onMessageResponse(response);
+                                listener.onDisconnect();
                             }
-                            response = null;
                             break;
-                        case 4:
-                            response = null;
-                            connectErrorCause = null;
+                        case SEND_ERROR:
                             for (SocketListener listener : mSocketListenerList) {
-                                listener.onSendMessageError(errorResponse);
+                                listener.onSendDataError(errorResponse);
                             }
-                            errorResponse = null;
+                            break;
+                        case STRING_MSG:
+                            for (SocketListener listener : mSocketListenerList) {
+                                listener.onMessage(textResponse);
+                            }
+                            break;
+                        case BYTE_BUFFER_MSG:
+                            for (SocketListener listener : mSocketListenerList) {
+                                listener.onMessage(byteResponse);
+                            }
+                            break;
+                        case PING:
+                            for (SocketListener listener : mSocketListenerList) {
+                                listener.onPing(framedataResponse);
+                            }
+                            break;
+                        case PONG:
+                            for (SocketListener listener : mSocketListenerList) {
+                                listener.onPong(framedataResponse);
+                            }
                             break;
                     }
                     mSocketListenerList = null;
+                    errorResponse = null;
+                    connectErrorCause = null;
+                    textResponse = null;
+                    byteResponse = null;
+                    framedataResponse = null;
                 }
             } finally {
                 RUNNABLE_POOL.offer(this);
