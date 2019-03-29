@@ -29,7 +29,7 @@ public interface SocketWrapperListener {
      * 数据发送失败
      *
      * @param request 发送的请求
-     * @param type    失败类型：0-未连接，1-未知错误
+     * @param type    失败类型：0-未连接，1-未知错误，2-初始化未完成
      */
     void onSendDataError(Request request, int type, Throwable tr);
 

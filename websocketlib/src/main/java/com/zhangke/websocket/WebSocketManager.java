@@ -1,5 +1,8 @@
 package com.zhangke.websocket;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.text.TextUtils;
 
 import com.zhangke.websocket.dispatcher.ResponseProcessEngine;
@@ -45,6 +48,8 @@ public class WebSocketManager {
      */
     private boolean destroyed = false;
 
+    private WebSocketEngine webSocketEngine = WebSocketEngine.getInstance();
+
     public WebSocketManager(WebSocketSetting setting) {
         this.mSetting = setting;
         mSocketWrapperListener = getSocketWrapperListener();
@@ -62,7 +67,7 @@ public class WebSocketManager {
             mWebSocket = new WebSocketWrapper(this.mSetting, mSocketWrapperListener);
         }
         if (mWebSocket.getConnectState() == 0) {
-            mWebSocket.connect();
+            reconnect();
         }
     }
 
@@ -112,7 +117,7 @@ public class WebSocketManager {
             return this;
         }
         if (mWebSocket.getConnectState() != 0) {
-            mWebSocket.disConnect();
+            webSocketEngine.disConnect(mWebSocket, mSocketWrapperListener);
         }
         return this;
     }
@@ -235,7 +240,7 @@ public class WebSocketManager {
     public void destroy() {
         destroyed = true;
         if (mWebSocket != null) {
-            mWebSocket.destroy();
+            webSocketEngine.destroyWebSocket(mWebSocket);
             mWebSocket = null;
         }
         if (mDelivery != null) {
@@ -262,7 +267,7 @@ public class WebSocketManager {
             return;
         }
         if (mWebSocket.getConnectState() == 0) {
-            mWebSocket.reconnect();
+            webSocketEngine.connect(mWebSocket, mSocketWrapperListener);
         } else {
             LogUtil.e(TAG, "WebSocket 已连接，请勿重试。");
         }
@@ -276,7 +281,7 @@ public class WebSocketManager {
             LogUtil.e(TAG, "This WebSocketManager is destroyed!");
             return;
         }
-        mWebSocket.send(request);
+        webSocketEngine.sendRequest(mWebSocket, request, mSocketWrapperListener);
     }
 
     /**
