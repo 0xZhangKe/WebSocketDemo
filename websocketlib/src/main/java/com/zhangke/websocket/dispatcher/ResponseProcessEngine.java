@@ -1,4 +1,4 @@
-package com.zhangke.websocket;
+package com.zhangke.websocket.dispatcher;
 
 import com.zhangke.websocket.dispatcher.EngineThread;
 import com.zhangke.websocket.dispatcher.IResponseDispatcher;
@@ -18,7 +18,7 @@ public class ResponseProcessEngine {
 
     private EngineThread mThread;
 
-    ResponseProcessEngine() {
+    public ResponseProcessEngine() {
         mThread = new EngineThread();
         mThread.start();
     }
