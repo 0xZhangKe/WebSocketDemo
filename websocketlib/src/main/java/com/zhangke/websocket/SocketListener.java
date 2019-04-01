@@ -1,8 +1,6 @@
 package com.zhangke.websocket;
 
-import com.zhangke.websocket.request.Request;
 import com.zhangke.websocket.response.ErrorResponse;
-import com.zhangke.websocket.response.Response;
 
 import org.java_websocket.framing.Framedata;
 
