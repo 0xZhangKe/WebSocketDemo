@@ -33,7 +33,7 @@ public class WebSocketManager {
     /**
      * 注册的监听器集合
      */
-    private ResponseDelivery mDelivery = new MainThreadResponseDelivery();
+    private ResponseDelivery mDelivery;
     private ReconnectManager mReconnectManager;
 
     private SocketWrapperListener mSocketWrapperListener;
@@ -51,6 +51,11 @@ public class WebSocketManager {
         this.mSetting = setting;
         this.mWebSocketEngine = webSocketEngine;
         this.mResponseProcessEngine = responseProcessEngine;
+
+        mDelivery = mSetting.getResponseDelivery();
+        if (mDelivery == null) {
+            mDelivery = new MainThreadResponseDelivery();
+        }
         mSocketWrapperListener = getSocketWrapperListener();
         if (mWebSocket == null) {
             mWebSocket = new WebSocketWrapper(this.mSetting, mSocketWrapperListener);

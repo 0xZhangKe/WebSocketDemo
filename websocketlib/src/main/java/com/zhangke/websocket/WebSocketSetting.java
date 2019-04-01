@@ -5,6 +5,8 @@ import android.content.Context;
 
 import com.zhangke.websocket.dispatcher.DefaultResponseDispatcher;
 import com.zhangke.websocket.dispatcher.IResponseDispatcher;
+import com.zhangke.websocket.dispatcher.MainThreadResponseDelivery;
+import com.zhangke.websocket.dispatcher.ResponseDelivery;
 
 import org.java_websocket.drafts.Draft;
 
@@ -53,6 +55,10 @@ public class WebSocketSetting {
      * 重连次数，默认为：10 次
      */
     private int reconnectFrequency = 10;
+    /**
+     * 消息发射器
+     */
+    private ResponseDelivery responseDelivery;
 
     /**
      * 获取 WebSocket 链接地址
@@ -104,7 +110,6 @@ public class WebSocketSetting {
      * 但是需要手动注册，
      * 你可以调用 {@link WebSocketHandler#registerNetworkChangedReceiver(Context)} 方法注册，
      * 也可以在 manifest 中注册，或者自己注册。
-     *
      */
     public void setReconnectWithNetworkChanged(boolean reconnectWithNetworkChanged) {
         this.reconnectWithNetworkChanged = reconnectWithNetworkChanged;
@@ -201,5 +206,22 @@ public class WebSocketSetting {
      */
     public void setConnectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
+    }
+
+    /**
+     * @see #setResponseDelivery(ResponseDelivery)
+     */
+    public ResponseDelivery getResponseDelivery() {
+        return responseDelivery;
+    }
+
+    /**
+     * 设置消息发射器，不设置则默认使用 {@link com.zhangke.websocket.dispatcher.MainThreadResponseDelivery}.
+     * 但你可以设置自己的消息发射器，只需要实现 {@link ResponseDelivery} 接口即可。
+     *
+     * @param responseDelivery 务必实现 ResponseDelivery 接口
+     */
+    public void setResponseDelivery(ResponseDelivery responseDelivery) {
+        this.responseDelivery = responseDelivery;
     }
 }
