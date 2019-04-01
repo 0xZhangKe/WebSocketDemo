@@ -1,5 +1,7 @@
 package com.zhangke.websocket;
 
+import android.Manifest;
+
 import com.zhangke.websocket.dispatcher.DefaultResponseDispatcher;
 import com.zhangke.websocket.dispatcher.IResponseDispatcher;
 
@@ -21,19 +23,13 @@ public class WebSocketSetting {
     /**
      * 消息处理分发器
      */
-    private IResponseDispatcher responseProcessDelivery;
+    private IResponseDispatcher responseProcessDispatcher;
     /**
-     * 设置是否使用子线程处理数据，
-     * true-接收到消息后将使用子线程处理数据，
-     * false-反之。
-     * 默认为 true，
-     * 使用子线程处理完消息后会自动切换到主线程。
+     * 设置是否使用子线程处理数据
      */
     private boolean processDataOnBackground;
     /**
-     * 设置网络连接变化后是否自动重连。</br>
-     * 如果设置 true 则需要注册广播：{@link NetworkChangedReceiver}，</br>
-     * 并添加 ACCESS_NETWORK_STATE 权限。
+     * 设置网络连接变化后是否自动重连。
      */
     private boolean reconnectWithNetworkChanged;
     /**
@@ -41,9 +37,7 @@ public class WebSocketSetting {
      */
     private Proxy mProxy;
     /**
-     * 协议实现，默认为 {@link org.java_websocket.drafts.Draft_6455}，
-     * 框架也只提供了这一个实现，一般情况不需要设置。
-     * 特殊需求可以自定义继承 {@link Draft} 的类
+     * WS 协议实现。
      */
     private Draft draft;
     /**
@@ -51,8 +45,7 @@ public class WebSocketSetting {
      */
     private Map<String, String> httpHeaders;
     /**
-     * 设置连接超时时间(单位：毫秒)，
-     * 默认为 0（不设置超时时间）
+     * 超时时间
      */
     private int connectTimeout = 0;
     /**
@@ -68,8 +61,7 @@ public class WebSocketSetting {
     }
 
     /**
-     * 设置 WebSocket 链接地址，第一次设置有效，
-     * 必须在启动 WebSocket 线程之前设置
+     * 设置 WebSocket 连接地址，必须设置项。
      */
     public void setConnectUrl(String connectUrl) {
         this.connectUrl = connectUrl;
@@ -79,71 +71,127 @@ public class WebSocketSetting {
      * 获取当前已设置的消息分发器
      */
     public IResponseDispatcher getResponseDispatcher() {
-        if (responseProcessDelivery == null) {
-            responseProcessDelivery = new DefaultResponseDispatcher();
+        if (responseProcessDispatcher == null) {
+            responseProcessDispatcher = new DefaultResponseDispatcher();
         }
-        return responseProcessDelivery;
+        return responseProcessDispatcher;
     }
 
     /**
-     * 设置消息分发器
+     * 设置消息分发器，
+     * 不设置则使用 {@link DefaultResponseDispatcher}
      */
-    public void setResponseProcessDelivery(IResponseDispatcher responseProcessDelivery) {
-        this.responseProcessDelivery = responseProcessDelivery;
+    public void setResponseProcessDispatcher(IResponseDispatcher responseDispatcher) {
+        if (responseProcessDispatcher == null) {
+            return;
+        }
+        this.responseProcessDispatcher = responseDispatcher;
     }
 
+    /**
+     * @see #setReconnectWithNetworkChanged(boolean)
+     */
     public boolean isReconnectWithNetworkChanged() {
         return this.reconnectWithNetworkChanged;
     }
 
+    /**
+     * 设置网络连接变化后是否自动重连。</br>
+     * 如果设置 true 则需要添加申请 {@link Manifest.permission#ACCESS_NETWORK_STATE} 权限。
+     */
     public void setReconnectWithNetworkChanged(boolean reconnectWithNetworkChanged) {
         this.reconnectWithNetworkChanged = reconnectWithNetworkChanged;
     }
 
+    /**
+     * @see #setProxy(Proxy)
+     */
     public Proxy getProxy() {
         return mProxy;
     }
 
+    /**
+     * 设置代理
+     */
     public void setProxy(Proxy mProxy) {
         this.mProxy = mProxy;
     }
 
+    /**
+     * @see #setDraft(Draft)
+     */
     public Draft getDraft() {
         return draft;
     }
 
+    /**
+     * ws 协议实现，默认为 {@link org.java_websocket.drafts.Draft_6455}，
+     * 框架也只提供了这一个实现，一般情况不需要设置。
+     * 特殊需求可以自定义继承 {@link Draft} 的类
+     */
     public void setDraft(Draft draft) {
         this.draft = draft;
     }
 
+    /**
+     * @see #setProcessDataOnBackground(boolean)
+     */
     public boolean processDataOnBackground() {
         return processDataOnBackground;
     }
 
+    /**
+     * 设置是否使用子线程处理数据。
+     * 使用子线程处理完消息后会自动切换到主线程。
+     *
+     * @param processDataOnBackground true-接收到消息后将使用子线程处理数据，
+     *                                false-反之，
+     *                                默认为 true。
+     */
     public void setProcessDataOnBackground(boolean processDataOnBackground) {
         this.processDataOnBackground = processDataOnBackground;
     }
 
+    /**
+     * @see #setReconnectFrequency(int)
+     */
     public int getReconnectFrequency() {
         return reconnectFrequency;
     }
 
+    /**
+     * 设置连接断开后的重连次数，
+     * 默认为 10 次
+     */
     public void setReconnectFrequency(int reconnectFrequency) {
         this.reconnectFrequency = reconnectFrequency;
     }
 
+    /**
+     * @see #setHttpHeaders(Map)
+     */
     public Map<String, String> getHttpHeaders() {
         return httpHeaders;
     }
 
+    /**
+     * 设置 WebSocket 连接的请求头信息
+     */
     public void setHttpHeaders(Map<String, String> httpHeaders) {
         this.httpHeaders = httpHeaders;
     }
 
+    /**
+     * @see #setConnectTimeout(int)
+     */
     public int getConnectTimeout() {
         return connectTimeout;
     }
 
+    /**
+     * 设置连接超时时间(单位：毫秒)，
+     * 默认为 0（不设置超时时间）
+     */
     public void setConnectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
     }
