@@ -19,20 +19,9 @@ public class WebSocketEngine {
 
     private static final String TAG = "WebSocketEngine";
 
-    private static volatile WebSocketEngine instance;
-
-    public static WebSocketEngine getInstance() {
-        if (instance == null) {
-            synchronized (WebSocketEngine.class) {
-                instance = new WebSocketEngine();
-            }
-        }
-        return instance;
-    }
-
     private OptionThread mOptionThread;
 
-    private WebSocketEngine() {
+    WebSocketEngine() {
         mOptionThread = new OptionThread();
         mOptionThread.start();
     }
@@ -87,7 +76,6 @@ public class WebSocketEngine {
     }
 
     public void destroy() {
-        instance = null;
         if (mOptionThread != null) {
             if (mOptionThread.mHandler != null) {
                 mOptionThread.mHandler.sendEmptyMessage(OptionHandler.QUIT);

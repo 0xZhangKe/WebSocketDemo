@@ -1,5 +1,8 @@
-package com.zhangke.websocket.dispatcher;
+package com.zhangke.websocket;
 
+import com.zhangke.websocket.dispatcher.EngineThread;
+import com.zhangke.websocket.dispatcher.IResponseDispatcher;
+import com.zhangke.websocket.dispatcher.ResponseDelivery;
 import com.zhangke.websocket.response.ErrorResponse;
 import com.zhangke.websocket.response.Response;
 
@@ -13,20 +16,9 @@ import java.util.Queue;
  */
 public class ResponseProcessEngine {
 
-    private static volatile ResponseProcessEngine mInstance;
-
-    public static ResponseProcessEngine getInstance() {
-        if (mInstance == null) {
-            synchronized (ResponseProcessEngine.class) {
-                mInstance = new ResponseProcessEngine();
-            }
-        }
-        return mInstance;
-    }
-
     private EngineThread mThread;
 
-    private ResponseProcessEngine() {
+    ResponseProcessEngine() {
         mThread = new EngineThread();
         mThread.start();
     }
