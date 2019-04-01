@@ -1,1 +1,1 @@
-include ':app', ':websocketlib'
+include ':sample', ':websocketlib'
