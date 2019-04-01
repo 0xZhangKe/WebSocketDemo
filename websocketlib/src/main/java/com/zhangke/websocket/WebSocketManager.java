@@ -1,20 +1,14 @@
 package com.zhangke.websocket;
 
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.text.TextUtils;
 
-import com.zhangke.websocket.dispatcher.ResponseProcessEngine;
 import com.zhangke.websocket.dispatcher.MainThreadResponseDelivery;
-import com.zhangke.websocket.request.ByteArrayRequest;
-import com.zhangke.websocket.request.ByteBufferRequest;
+import com.zhangke.websocket.dispatcher.ResponseDelivery;
+import com.zhangke.websocket.dispatcher.ResponseProcessEngine;
 import com.zhangke.websocket.request.Request;
 import com.zhangke.websocket.request.RequestFactory;
-import com.zhangke.websocket.request.StringRequest;
 import com.zhangke.websocket.response.ErrorResponse;
 import com.zhangke.websocket.response.Response;
-import com.zhangke.websocket.dispatcher.ResponseDelivery;
 import com.zhangke.websocket.util.LogUtil;
 
 import org.java_websocket.framing.Framedata;
@@ -48,10 +42,15 @@ public class WebSocketManager {
      */
     private boolean destroyed = false;
 
-    private WebSocketEngine webSocketEngine = WebSocketEngine.getInstance();
+    private WebSocketEngine mWebSocketEngine;
+    private ResponseProcessEngine mResponseProcessEngine;
 
-    public WebSocketManager(WebSocketSetting setting) {
+    WebSocketManager(WebSocketSetting setting,
+                     WebSocketEngine webSocketEngine,
+                     ResponseProcessEngine responseProcessEngine) {
         this.mSetting = setting;
+        this.mWebSocketEngine = webSocketEngine;
+        this.mResponseProcessEngine = responseProcessEngine;
         mSocketWrapperListener = getSocketWrapperListener();
         if (mWebSocket == null) {
             mWebSocket = new WebSocketWrapper(this.mSetting, mSocketWrapperListener);
@@ -117,7 +116,7 @@ public class WebSocketManager {
             return this;
         }
         if (mWebSocket.getConnectState() != 0) {
-            webSocketEngine.disConnect(mWebSocket, mSocketWrapperListener);
+            mWebSocketEngine.disConnect(mWebSocket, mSocketWrapperListener);
         }
         return this;
     }
@@ -240,7 +239,8 @@ public class WebSocketManager {
     public void destroy() {
         destroyed = true;
         if (mWebSocket != null) {
-            webSocketEngine.destroyWebSocket(mWebSocket);
+            mWebSocketEngine.destroyWebSocket(mWebSocket);
+            mWebSocketEngine = null;
             mWebSocket = null;
         }
         if (mDelivery != null) {
@@ -267,7 +267,7 @@ public class WebSocketManager {
             return;
         }
         if (mWebSocket.getConnectState() == 0) {
-            webSocketEngine.connect(mWebSocket, mSocketWrapperListener);
+            mWebSocketEngine.connect(mWebSocket, mSocketWrapperListener);
         } else {
             LogUtil.e(TAG, "WebSocket 已连接，请勿重试。");
         }
@@ -281,7 +281,7 @@ public class WebSocketManager {
             LogUtil.e(TAG, "This WebSocketManager is destroyed!");
             return;
         }
-        webSocketEngine.sendRequest(mWebSocket, request, mSocketWrapperListener);
+        mWebSocketEngine.sendRequest(mWebSocket, request, mSocketWrapperListener);
     }
 
     /**
@@ -319,7 +319,7 @@ public class WebSocketManager {
 
             @Override
             public void onConnectFailed(Throwable e) {
-                //if reconnecting,interrupt this event.
+                //if reconnecting,interrupt this event for ReconnectManager.
                 if (mReconnectManager != null &&
                         mReconnectManager.reconnecting()) {
                     mReconnectManager.onConnectError(e);
@@ -343,7 +343,7 @@ public class WebSocketManager {
             public void onSendDataError(Request request, int type, Throwable tr) {
                 ErrorResponse errorResponse = ErrorResponse.build(request, type, tr);
                 if (mSetting.processDataOnBackground()) {
-                    ResponseProcessEngine.getInstance()
+                    mResponseProcessEngine
                             .onSendDataError(errorResponse,
                                     mSetting.getResponseDispatcher(),
                                     mDelivery);
@@ -356,7 +356,7 @@ public class WebSocketManager {
             @Override
             public void onMessage(Response message) {
                 if (mSetting.processDataOnBackground()) {
-                    ResponseProcessEngine.getInstance()
+                    mResponseProcessEngine
                             .onMessageReceive(message,
                                     mSetting.getResponseDispatcher(),
                                     mDelivery);
