@@ -1,6 +1,7 @@
 package com.zhangke.websocket;
 
 import android.Manifest;
+import android.content.Context;
 
 import com.zhangke.websocket.dispatcher.DefaultResponseDispatcher;
 import com.zhangke.websocket.dispatcher.IResponseDispatcher;
@@ -91,13 +92,19 @@ public class WebSocketSetting {
     /**
      * @see #setReconnectWithNetworkChanged(boolean)
      */
-    public boolean isReconnectWithNetworkChanged() {
+    public boolean reconnectWithNetworkChanged() {
         return this.reconnectWithNetworkChanged;
     }
 
     /**
      * 设置网络连接变化后是否自动重连。</br>
      * 如果设置 true 则需要添加申请 {@link Manifest.permission#ACCESS_NETWORK_STATE} 权限。
+     * 需要注意的是，如果希望网络连接发生变化后重新连接，
+     * 需要注册监听网络变化的广播，框架中已经实现了这个广播：{@link NetworkChangedReceiver}。
+     * 但是需要手动注册，
+     * 你可以调用 {@link WebSocketHandler#registerNetworkChangedReceiver(Context)} 方法注册，
+     * 也可以在 manifest 中注册，或者自己注册。
+     *
      */
     public void setReconnectWithNetworkChanged(boolean reconnectWithNetworkChanged) {
         this.reconnectWithNetworkChanged = reconnectWithNetworkChanged;
