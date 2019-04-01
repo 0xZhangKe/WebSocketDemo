@@ -22,9 +22,6 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.zhangke.websocket.WebSocketService"/>
-        <receiver android:name="com.zhangke.websocket.NetworkChangedReceiver"/>
-
     </application>
 
 </manifest>

@@ -66,13 +66,14 @@ public class WebSocketManager {
     /**
      * 初始化，调用此方法开始连接
      */
-    public void init() {
+    public WebSocketManager init() {
         if (mWebSocket == null) {
             mWebSocket = new WebSocketWrapper(this.mSetting, mSocketWrapperListener);
         }
         if (mWebSocket.getConnectState() == 0) {
             reconnect();
         }
+        return this;
     }
 
     /**

@@ -10,6 +10,8 @@ import com.zhangke.websocket.dispatcher.IResponseDispatcher;
 import com.zhangke.websocket.response.Response;
 import com.zhangke.websocket.dispatcher.ResponseDelivery;
 
+import java.nio.ByteBuffer;
+
 /**
  * Created by ZhangKe on 2018/6/27.
  */
@@ -23,19 +25,25 @@ public class AppResponseDispatcher implements IResponseDispatcher {
     }
 
     @Override
-    public void onConnectError(Throwable cause, ResponseDelivery delivery) {
-        delivery.onConnectError(cause);
+    public void onMessageResponse(String message, ResponseDelivery delivery) {
+
     }
 
     @Override
-    public void onDisconnected(ResponseDelivery delivery) {
-        delivery.onDisconnected();
+    public void onMessageResponse(ByteBuffer byteBuffer, ResponseDelivery delivery) {
+
     }
 
-    /**
-     * 统一处理响应的数据
-     */
     @Override
+    public void onPing(Framedata framedata, ResponseDelivery delivery) {
+
+    }
+
+    @Override
+    public void onPong(org.java_websocket.framing.Framedata framedata, ResponseDelivery delivery) {
+
+    }
+
     public void onMessageResponse(Response message, ResponseDelivery delivery) {
         try {
             CommonResponseEntity responseEntity = JSON.parseObject(message.getResponseText(), new TypeReference<CommonResponseEntity>() {
