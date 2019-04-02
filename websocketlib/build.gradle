@@ -29,5 +29,5 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     compileOnly "com.android.support:appcompat-v7:$supportLibraryVersion"
 
-    implementation 'org.java-websocket:Java-WebSocket:1.4.0'
+    compile 'org.java-websocket:Java-WebSocket:1.4.0'
 }
