@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.os.Message;
 
 import com.zhangke.websocket.request.Request;
+import com.zhangke.websocket.response.ErrorResponse;
 import com.zhangke.websocket.util.LogUtil;
 
 import java.util.ArrayDeque;
@@ -30,7 +31,9 @@ public class WebSocketEngine {
                      Request request,
                      SocketWrapperListener listener) {
         if (mOptionThread.mHandler == null) {
-            listener.onSendDataError(request, 2, null);
+            listener.onSendDataError(request,
+                    ErrorResponse.ERROR_UN_INIT,
+                    null);
         } else {
             ReRunnable runnable = ReRunnable.obtain();
             runnable.type = 0;

@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import com.zhangke.websocket.request.Request;
 import com.zhangke.websocket.response.ByteBufferResponse;
+import com.zhangke.websocket.response.ErrorResponse;
 import com.zhangke.websocket.response.Response;
 import com.zhangke.websocket.response.ResponseFactory;
 import com.zhangke.websocket.response.TextResponse;
@@ -155,7 +156,9 @@ public class WebSocketWrapper {
                 LogUtil.e(TAG, "ws is disconnected, send failed:" + request.toString(), e);
                 if (mSocketListener != null) {
                     //not connect
-                    mSocketListener.onSendDataError(request, 0, e);
+                    mSocketListener.onSendDataError(request,
+                            ErrorResponse.ERROR_NO_CONNECT,
+                            e);
                     mSocketListener.onDisconnect();
                 }
             } catch (Throwable e) {
@@ -163,7 +166,9 @@ public class WebSocketWrapper {
                 LogUtil.e(TAG, "Exception,send failed:" + request.toString(), e);
                 if (mSocketListener != null) {
                     //unknown error
-                    mSocketListener.onSendDataError(request, 1, e);
+                    mSocketListener.onSendDataError(request,
+                            ErrorResponse.ERROR_UNKNOWN,
+                            e);
                 }
             } finally {
                 request.release();
@@ -172,7 +177,9 @@ public class WebSocketWrapper {
             LogUtil.e(TAG, "WebSocket not connect,send failed:" + request.toString());
             if (mSocketListener != null) {
                 //not connect
-                mSocketListener.onSendDataError(request, 0, null);
+                mSocketListener.onSendDataError(request,
+                        ErrorResponse.ERROR_NO_CONNECT,
+                        null);
             }
         }
     }

@@ -16,6 +16,19 @@ import java.util.Queue;
  */
 public class ErrorResponse {
 
+    /**
+     * ws 未连接
+     */
+    public static final int ERROR_NO_CONNECT = 0;
+    /**
+     * 未知错误
+     */
+    public static final int ERROR_UNKNOWN = 1;
+    /**
+     * 初始化未完成
+     */
+    public static final int ERROR_UN_INIT = 2;
+
     private static Queue<ErrorResponse> CACHE_QUEUE = new ArrayDeque<>(10);
 
     private static ErrorResponse obtain() {
@@ -38,8 +51,7 @@ public class ErrorResponse {
     }
 
     /**
-     * 1-WebSocket 未连接或已断开；
-     * 2-未知错误。
+     * 错误信息
      */
     private int errorCode;
     /**
@@ -69,22 +81,17 @@ public class ErrorResponse {
     }
 
     /**
-     * 1-WebSocket 未连接或已断开
-     * 2-WebSocketService 服务未绑定到当前 Activity/Fragment，或绑定失败
-     * 3-WebSocket 初始化未完成
-     * 11-数据获取成功，但是解析 JSON 失败
-     * 12-数据获取成功，但是服务器返回数据中的code值不正确
+     * 获取错误码：
+     * {@link #ERROR_NO_CONNECT}、
+     * {@link #ERROR_UNKNOWN}、
+     * {@link #ERROR_UN_INIT}
      */
     public int getErrorCode() {
         return errorCode;
     }
 
     /**
-     * 1-WebSocket 未连接或已断开
-     * 2-WebSocketService 服务未绑定到当前 Activity/Fragment，或绑定失败
-     * 3-WebSocket 初始化未完成
-     * 11-数据获取成功，但是解析 JSON 失败
-     * 12-数据获取成功，但是服务器返回数据中的code值不正确
+     * @see #getErrorCode()
      */
     public void setErrorCode(int errorCode) {
         this.errorCode = errorCode;
