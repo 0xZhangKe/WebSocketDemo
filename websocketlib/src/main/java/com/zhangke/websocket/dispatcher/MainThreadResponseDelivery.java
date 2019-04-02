@@ -22,6 +22,7 @@ import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNAB
 import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.PONG;
 import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.SEND_ERROR;
 import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.STRING_MSG;
+import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.T_MSG;
 import static com.zhangke.websocket.util.ThreadUtil.checkMainThread;
 import static com.zhangke.websocket.util.ThreadUtil.runOnMainThread;
 
@@ -184,6 +185,25 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
     }
 
     @Override
+    public <T> void onMessage(T data) {
+        if (data == null || isEmpty()) {
+            return;
+        }
+        if (checkMainThread()) {
+            synchronized (LISTENER_BLOCK) {
+                for (SocketListener listener : mSocketListenerList) {
+                    listener.onMessage(data);
+                }
+            }
+        } else {
+            CallbackRunnable callbackRunnable = getRunnable();
+            callbackRunnable.type = T_MSG;
+            callbackRunnable.formattedData = data;
+            runOnMainThread(callbackRunnable);
+        }
+    }
+
+    @Override
     public void onPing(Framedata framedata) {
         if (isEmpty()) {
             return;
@@ -254,11 +274,12 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
         SEND_ERROR,//数据发送失败
         STRING_MSG,//接收到 String 数据
         BYTE_BUFFER_MSG,//接收到 ByteBuffer 数据
+        T_MSG,//转换后的泛型数据
         PING,//接收到 Ping
         PONG//接收到 Pong
     }
 
-    private static class CallbackRunnable implements Runnable {
+    private static class CallbackRunnable<T> implements Runnable {
 
         List<SocketListener> mSocketListenerList = new ArrayList<>();
 
@@ -267,6 +288,7 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
         String textResponse;
         ByteBuffer byteResponse;
         Framedata framedataResponse;
+        T formattedData;
 
         RUNNABLE_TYPE type = NON;
 
@@ -285,6 +307,7 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
                 if (type == BYTE_BUFFER_MSG && byteResponse == null) return;
                 if (type == PING && framedataResponse == null) return;
                 if (type == PONG && framedataResponse == null) return;
+                if (type == T_MSG && formattedData == null) return;
                 synchronized (LISTENER_BLOCK) {
                     switch (type) {
                         case CONNECTED:
@@ -317,6 +340,11 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
                                 listener.onMessage(byteResponse);
                             }
                             break;
+                        case T_MSG:
+                            for (SocketListener listener : mSocketListenerList) {
+                                listener.onMessage(formattedData);
+                            }
+                            break;
                         case PING:
                             for (SocketListener listener : mSocketListenerList) {
                                 listener.onPing(framedataResponse);
@@ -334,6 +362,7 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
                     textResponse = null;
                     byteResponse = null;
                     framedataResponse = null;
+                    formattedData = null;
                 }
             } finally {
                 RUNNABLE_POOL.offer(this);

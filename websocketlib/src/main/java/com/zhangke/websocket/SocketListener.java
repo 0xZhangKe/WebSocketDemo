@@ -46,6 +46,12 @@ public interface SocketListener {
     void onMessage(ByteBuffer bytes);
 
     /**
+     * 用户可将数据转成对应的泛型类型，
+     * 然后通过此方法发送给下游使用者。
+     */
+    <T> void onMessage(T data);
+
+    /**
      * 接收到 ping
      */
     void onPing(Framedata framedata);
