@@ -6,8 +6,6 @@ import com.zhangke.websocket.dispatcher.IResponseDispatcher;
 import com.zhangke.websocket.dispatcher.ResponseDelivery;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayDeque;
-import java.util.Queue;
 
 /**
  * 接收到二进制数据
@@ -33,7 +31,7 @@ public class ByteBufferResponse implements Response<ByteBuffer> {
 
     @Override
     public void onResponse(IResponseDispatcher dispatcher, ResponseDelivery delivery) {
-        dispatcher.onMessageResponse(data, delivery);
+        dispatcher.onMessage(data, delivery);
         release();
     }
 

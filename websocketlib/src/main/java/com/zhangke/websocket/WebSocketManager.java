@@ -304,7 +304,7 @@ public class WebSocketManager {
             public void onDisconnect() {
                 LogUtil.i(TAG, "重连失败");
                 mSetting.getResponseDispatcher()
-                        .onDisconnected(mDelivery);
+                        .onDisconnect(mDelivery);
             }
         });
     }
@@ -331,14 +331,14 @@ public class WebSocketManager {
                     mReconnectManager.onConnectError(e);
                 } else {
                     mSetting.getResponseDispatcher()
-                            .onConnectError(e, mDelivery);
+                            .onConnectFailed(e, mDelivery);
                 }
             }
 
             @Override
             public void onDisconnect() {
                 mSetting.getResponseDispatcher()
-                        .onDisconnected(mDelivery);
+                        .onDisconnect(mDelivery);
                 if (mReconnectManager == null) {
                     mReconnectManager = getDefaultReconnectManager();
                 }
@@ -354,7 +354,7 @@ public class WebSocketManager {
                                     mSetting.getResponseDispatcher(),
                                     mDelivery);
                 } else {
-                    mSetting.getResponseDispatcher().onSendMessageError(errorResponse, mDelivery);
+                    mSetting.getResponseDispatcher().onSendDataError(errorResponse, mDelivery);
                 }
                 //todo 使用完注意释放资源 request.release();
             }

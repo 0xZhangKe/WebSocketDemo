@@ -6,9 +6,6 @@ import android.text.TextUtils;
 import com.zhangke.websocket.dispatcher.IResponseDispatcher;
 import com.zhangke.websocket.dispatcher.ResponseDelivery;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
-
 /**
  * 默认的消息响应事件包装类，
  * 只包含文本，不包含数据实体
@@ -33,7 +30,7 @@ public class TextResponse implements Response<String> {
 
     @Override
     public void onResponse(IResponseDispatcher dispatcher, ResponseDelivery delivery) {
-        dispatcher.onMessageResponse(responseText, delivery);
+        dispatcher.onMessage(responseText, delivery);
         release();
     }
 

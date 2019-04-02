@@ -26,12 +26,12 @@ public interface IResponseDispatcher {
      *
      * @param cause 失败原因
      */
-    void onConnectError(Throwable cause, ResponseDelivery delivery);
+    void onConnectFailed(Throwable cause, ResponseDelivery delivery);
 
     /**
      * 连接断开
      */
-    void onDisconnected(ResponseDelivery delivery);
+    void onDisconnect(ResponseDelivery delivery);
 
     /**
      * 接收到文本消息
@@ -39,7 +39,7 @@ public interface IResponseDispatcher {
      * @param message  接收到的消息
      * @param delivery 消息发射器
      */
-    void onMessageResponse(String message, ResponseDelivery delivery);
+    void onMessage(String message, ResponseDelivery delivery);
 
     /**
      * 接收到二进制消息
@@ -47,7 +47,7 @@ public interface IResponseDispatcher {
      * @param byteBuffer 接收到的消息
      * @param delivery   消息发射器
      */
-    void onMessageResponse(ByteBuffer byteBuffer, ResponseDelivery delivery);
+    void onMessage(ByteBuffer byteBuffer, ResponseDelivery delivery);
 
     /**
      * 接收到 ping
@@ -66,6 +66,6 @@ public interface IResponseDispatcher {
     /**
      * 消息发送失败或接受到错误消息等等
      */
-    void onSendMessageError(ErrorResponse error, ResponseDelivery delivery);
+    void onSendDataError(ErrorResponse error, ResponseDelivery delivery);
 
 }

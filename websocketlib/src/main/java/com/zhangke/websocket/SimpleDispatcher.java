@@ -1,17 +1,20 @@
-package com.zhangke.websocket.dispatcher;
+package com.zhangke.websocket;
 
-import com.zhangke.websocket.response.ErrorResponse;
-import com.zhangke.websocket.response.Response;
+import com.zhangke.websocket.dispatcher.IResponseDispatcher;
+import com.zhangke.websocket.dispatcher.ResponseDelivery;
 
 import org.java_websocket.framing.Framedata;
 
 import java.nio.ByteBuffer;
 
 /**
- * 通用消息调度器，没做任何数据处理
- * Created by ZhangKe on 2018/6/26.
+ * 一个简单的 WebSocket 消息分发器，实现了 {@link IResponseDispatcher} 接口，
+ * 因为 IResponseDispatcher 中的方法比较多，所以在此提供了一个简单版本，
+ * 只需要实现其中主要的几个方法即可。
+ * <p>
+ * Created by ZhangKe on 2019/4/2.
  */
-public class DefaultResponseDispatcher implements IResponseDispatcher {
+public abstract class SimpleDispatcher implements IResponseDispatcher {
 
     @Override
     public void onConnected(ResponseDelivery delivery) {
@@ -29,11 +32,6 @@ public class DefaultResponseDispatcher implements IResponseDispatcher {
     }
 
     @Override
-    public void onMessage(String message, ResponseDelivery delivery) {
-        delivery.onMessage(message);
-    }
-
-    @Override
     public void onMessage(ByteBuffer byteBuffer, ResponseDelivery delivery) {
         delivery.onMessage(byteBuffer);
     }
@@ -48,8 +46,4 @@ public class DefaultResponseDispatcher implements IResponseDispatcher {
         delivery.onPong(framedata);
     }
 
-    @Override
-    public void onSendDataError(ErrorResponse error, ResponseDelivery delivery) {
-        delivery.onSendDataError(error);
-    }
 }

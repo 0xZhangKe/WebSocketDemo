@@ -37,7 +37,7 @@ public class EngineThread extends Thread {
             try {
                 ResponseProcessEngine.EngineEntity entity = jobQueue.take();
                 if (entity.isError) {
-                    entity.dispatcher.onSendMessageError(entity.errorResponse,
+                    entity.dispatcher.onSendDataError(entity.errorResponse,
                             entity.delivery);
                 } else {
                     entity.response.onResponse(entity.dispatcher, entity.delivery);
