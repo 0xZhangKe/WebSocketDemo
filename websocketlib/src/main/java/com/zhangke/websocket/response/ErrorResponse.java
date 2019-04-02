@@ -26,10 +26,6 @@ public class ErrorResponse {
         return request;
     }
 
-    public static void release(ErrorResponse request) {
-        CACHE_QUEUE.offer(request);
-    }
-
     /**
      * 构建一个 ErrorResponse
      */
@@ -132,6 +128,10 @@ public class ErrorResponse {
 
     public void setReserved(Object reserved) {
         this.reserved = reserved;
+    }
+
+    public void release() {
+        CACHE_QUEUE.offer(this);
     }
 
     @NonNull
