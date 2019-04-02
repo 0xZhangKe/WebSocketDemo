@@ -23,7 +23,7 @@ public class App extends Application {
         setting.setReconnectWithNetworkChanged(true);
         setting.setProcessDataOnBackground(true);
         setting.setReconnectFrequency(20);
-        setting.setResponseProcessDispatcher(new AppResponseDispatcher());
+        setting.setResponseProcessDispatcher(new AppResponseDispatcher<CommonResponseEntity>());
         setting.setConnectTimeout(60);
 
         WebSocketHandler.initDefaultWebSocket(setting)
