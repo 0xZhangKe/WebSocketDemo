@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
  * 如果需要自定义事件的分发，实现这个类并设置到{@link WebSocketSetting} 中即可。
  * Created by ZhangKe on 2018/6/26.
  */
-public interface IResponseDispatcher<T> {
+public interface IResponseDispatcher {
 
     /**
      * 连接成功
