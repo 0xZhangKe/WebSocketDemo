@@ -1,7 +1,6 @@
 package com.zhangke.websocket;
 
 import com.zhangke.websocket.response.ErrorResponse;
-import com.zhangke.websocket.util.LogUtil;
 
 import org.java_websocket.framing.Framedata;
 
@@ -20,46 +19,41 @@ public abstract class SimpleListener implements SocketListener {
 
     @Override
     public void onConnected() {
-        LogUtil.i(TAG, "onConnected()");
+        //to override
     }
 
     @Override
     public void onConnectFailed(Throwable e) {
-        LogUtil.e(TAG, "onConnectFailed(Throwable)", e);
+        //to override
     }
 
     @Override
     public void onDisconnect() {
-        LogUtil.i(TAG, "onDisconnect()");
+        //to override
     }
 
     @Override
-    public <T> void onMessage(T data) {
-        LogUtil.e(TAG, "onMessage(T)");
-    }
-
-    @Override
-    public void onMessage(String message) {
-        LogUtil.e(TAG, "onMessage(String)");
+    public <T> void onMessage(String message, T data) {
+        //to override
     }
 
     @Override
     public void onSendDataError(ErrorResponse errorResponse) {
-        LogUtil.e(TAG, "onSendDataError(ErrorResponse)");
+        //to override
     }
 
     @Override
-    public void onMessage(ByteBuffer bytes) {
-        LogUtil.i(TAG, "onMessage(ByteBuffer)");
+    public <T> void onMessage(ByteBuffer bytes, T data) {
+        //to override
     }
 
     @Override
     public void onPing(Framedata framedata) {
-        LogUtil.i(TAG, "onPing(Framedata)");
+        //to override
     }
 
     @Override
     public void onPong(Framedata framedata) {
-        LogUtil.i(TAG, "onPong(Framedata)");
+        //to override
     }
 }

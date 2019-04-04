@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
  * <p>
  * Created by ZhangKe on 2019/4/2.
  */
-public abstract class SimpleDispatcher<T> implements IResponseDispatcher<T> {
+public abstract class SimpleDispatcher implements IResponseDispatcher {
 
     @Override
     public void onConnected(ResponseDelivery delivery) {
@@ -33,7 +33,7 @@ public abstract class SimpleDispatcher<T> implements IResponseDispatcher<T> {
 
     @Override
     public void onMessage(ByteBuffer byteBuffer, ResponseDelivery delivery) {
-        delivery.onMessage(byteBuffer);
+        delivery.onMessage(byteBuffer, null);
     }
 
     @Override
