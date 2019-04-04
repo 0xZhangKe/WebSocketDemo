@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.alibaba.fastjson.JSONObject;
 import com.zhangke.websocket.SimpleListener;
@@ -21,21 +22,59 @@ import java.nio.ByteBuffer;
 
 public class LoginActivity extends AppCompatActivity {
 
-    /**
-     * 假设这是登陆的接口Path
-     */
-    private static final String LOGIN_PATH = "Login";
+    private EditText etContent;
+    private TextView tvMsg;
 
-    private EditText etAccount;
-    private EditText etPassword;
-    private Button btnLogin;
-
-    private SocketListener socketListener = new SimpleListener() {
+    private SocketListener socketListener = new SocketListener() {
         @Override
-        public <T> void onMessage(T data) {
-            super.onMessage(data);
-            if (data instanceof CommonResponseEntity) {
-                CommonResponseEntity entity = (CommonResponseEntity) data;
+        public void onConnected() {
+            appendMsgDisplay("onConnected");
+        }
+
+        @Override
+        public void onConnectFailed(Throwable e) {
+            if(e != null){
+                appendMsgDisplay("onConnectFailed:" + e.toString());
+            }else{
+                appendMsgDisplay("onConnectFailed:null");
+            }
+        }
+
+        @Override
+        public void onDisconnect() {
+            appendMsgDisplay("onDisconnect");
+        }
+
+        @Override
+        public void onSendDataError(ErrorResponse errorResponse) {
+            appendMsgDisplay("onSendDataError:" + errorResponse.toString());
+        }
+
+        @Override
+        public <T> void onMessage(String message, T data) {
+            appendMsgDisplay("onMessage(String, T):" + message);
+        }
+
+        @Override
+        public <T> void onMessage(ByteBuffer bytes, T data) {
+            appendMsgDisplay("onMessage(ByteBuffer, T):" + bytes);
+        }
+
+        @Override
+        public void onPing(Framedata framedata) {
+            if(framedata != null){
+                appendMsgDisplay("onPing:" + framedata.toString());
+            }else{
+                appendMsgDisplay("onPing:null");
+            }
+        }
+
+        @Override
+        public void onPong(Framedata framedata) {
+            if(framedata != null){
+                appendMsgDisplay("onPong:" + framedata.toString());
+            }else{
+                appendMsgDisplay("onPong:null");
             }
         }
     };
@@ -45,37 +84,43 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        initView();
+
         WebSocketHandler.getDefault().addListener(socketListener);
 
-        initView();
     }
 
     private void initView() {
-        etAccount = (EditText) findViewById(R.id.et_account);
-        etPassword = (EditText) findViewById(R.id.et_password);
-        btnLogin = (Button) findViewById(R.id.btn_login);
+        etContent = (EditText) findViewById(R.id.et_content);
+        tvMsg = (TextView) findViewById(R.id.tv_msg);
 
-        btnLogin.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btn_send).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String account = etAccount.getText().toString();
-                String password = etPassword.getText().toString();
-                if (TextUtils.isEmpty(account) || TextUtils.isEmpty(password)) {
+                String text = etContent.getText().toString();
+                if (TextUtils.isEmpty(text)) {
                     UiUtil.showToast(LoginActivity.this, "输入不能为空");
                     return;
                 }
-                login(account, password);
+                WebSocketHandler.getDefault().send(text);
             }
         });
-    }
-
-    private void login(String account, String password) {
-        WebSocketHandler.getDefault().send("");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         WebSocketHandler.getDefault().removeListener(socketListener);
+    }
+
+    private void appendMsgDisplay(String msg){
+        StringBuilder textBuilder = new StringBuilder();
+        if(!TextUtils.isEmpty(tvMsg.getText())){
+            textBuilder.append(tvMsg.getText().toString());
+            textBuilder.append("\n");
+        }
+        textBuilder.append(msg);
+        textBuilder.append("\n");
+        tvMsg.setText(textBuilder.toString());
     }
 }

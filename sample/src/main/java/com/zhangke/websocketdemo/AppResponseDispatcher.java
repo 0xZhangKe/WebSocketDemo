@@ -9,14 +9,14 @@ import com.zhangke.websocket.response.ErrorResponse;
 /**
  * Created by ZhangKe on 2018/6/27.
  */
-public class AppResponseDispatcher<T> extends SimpleDispatcher<T> {
+public class AppResponseDispatcher extends SimpleDispatcher {
 
     private static final String LOGTAG = "AppResponseDispatcher";
 
     @Override
     public void onMessage(String message, ResponseDelivery delivery) {
         CommonResponseEntity entity = new CommonResponseEntity();
-        delivery.onMessage(entity);
+        delivery.onMessage(message, entity);
     }
 
     /**
@@ -26,14 +26,14 @@ public class AppResponseDispatcher<T> extends SimpleDispatcher<T> {
     @Override
     public void onSendDataError(ErrorResponse error, ResponseDelivery delivery) {
         switch (error.getErrorCode()) {
-            case 1:
+            case ErrorResponse.ERROR_NO_CONNECT:
                 error.setDescription("网络错误");
                 break;
-            case 2:
-                error.setDescription("网络错误");
+            case ErrorResponse.ERROR_UN_INIT:
+                error.setDescription("连接未初始化");
                 break;
-            case 3:
-                error.setDescription("网络错误");
+            case ErrorResponse.ERROR_UNKNOWN:
+                error.setDescription("未知错误");
                 break;
             case 11:
                 error.setDescription("数据格式异常");
