@@ -18,7 +18,7 @@ import java.util.Queue;
  */
 public class WebSocketEngine {
 
-    private static final String TAG = "WebSocketEngine";
+    private static final String TAG = "WSWebSocketEngine";
 
     private OptionThread mOptionThread;
 

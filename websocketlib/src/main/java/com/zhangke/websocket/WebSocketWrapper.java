@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public class WebSocketWrapper {
 
-    private static final String TAG = "WebSocketLib";
+    private static final String TAG = "WSWrapper";
 
     private WebSocketSetting mSetting;
     private SocketWrapperListener mSocketListener;

@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public class NetworkChangedReceiver extends BroadcastReceiver {
 
-    private static final String LOGTAG = "NetworkChangedReceiver";
+    private static final String TAG = "WSNetworkReceiver";
 
     public NetworkChangedReceiver() {
     }
@@ -34,9 +34,9 @@ public class NetworkChangedReceiver extends BroadcastReceiver {
             if (activeNetwork != null) {
                 if (activeNetwork.isConnected()) {
                     if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
-                        LogUtil.i(LOGTAG, "网络连接发生变化，当前WiFi连接可用，正在尝试重连。");
+                        LogUtil.i(TAG, "网络连接发生变化，当前WiFi连接可用，正在尝试重连。");
                     } else if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
-                        LogUtil.i(LOGTAG, "网络连接发生变化，当前移动连接可用，正在尝试重连。");
+                        LogUtil.i(TAG, "网络连接发生变化，当前移动连接可用，正在尝试重连。");
                     }
                     if (WebSocketHandler.getDefault() != null) {
                         if (WebSocketHandler.getDefault().getSetting().reconnectWithNetworkChanged()) {
@@ -53,7 +53,7 @@ public class NetworkChangedReceiver extends BroadcastReceiver {
                         }
                     }
                 } else {
-                    LogUtil.i(LOGTAG, "当前没有可用网络");
+                    LogUtil.i(TAG, "当前没有可用网络");
                 }
             }
         }

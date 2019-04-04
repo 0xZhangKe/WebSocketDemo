@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
  */
 public class EngineThread extends Thread {
 
-    private String TAG = "EngineThread";
+    private String TAG = "WSEngineThread";
 
     private ArrayBlockingQueue<ResponseProcessEngine.EngineEntity> jobQueue = new ArrayBlockingQueue<>(10);
 
