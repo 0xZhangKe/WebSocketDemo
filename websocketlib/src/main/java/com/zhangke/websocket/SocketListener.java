@@ -37,19 +37,23 @@ public interface SocketListener {
 
     /**
      * 接收到文本消息
+     *
+     * @param message 文本消息
+     * @param data    用户可将数据转成对应的泛型类型，可能为空，具体看用户在 {@link com.zhangke.websocket.dispatcher.IResponseDispatcher}
+     *                中的实现，默认为空
+     * @param <T>     IResponseDispatcher 中转换的泛型类型
      */
-    void onMessage(String message);
+    <T> void onMessage(String message, T data);
 
     /**
      * 接收到二进制消息
+     *
+     * @param bytes 二进制消息
+     * @param data  用户可将数据转成对应的泛型类型，可能为空，具体看用户在 {@link com.zhangke.websocket.dispatcher.IResponseDispatcher}
+     *              中的实现，默认为空
+     * @param <T>   IResponseDispatcher 中转换的泛型类型
      */
-    void onMessage(ByteBuffer bytes);
-
-    /**
-     * 用户可将数据转成对应的泛型类型，
-     * 然后通过此方法发送给下游使用者。
-     */
-    <T> void onMessage(T data);
+    <T> void onMessage(ByteBuffer bytes, T data);
 
     /**
      * 接收到 ping

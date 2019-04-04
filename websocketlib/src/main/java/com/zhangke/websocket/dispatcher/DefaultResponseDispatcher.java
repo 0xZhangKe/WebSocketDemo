@@ -30,12 +30,12 @@ public class DefaultResponseDispatcher implements IResponseDispatcher {
 
     @Override
     public void onMessage(String message, ResponseDelivery delivery) {
-        delivery.onMessage(message);
+        delivery.onMessage(message, null);
     }
 
     @Override
     public void onMessage(ByteBuffer byteBuffer, ResponseDelivery delivery) {
-        delivery.onMessage(byteBuffer);
+        delivery.onMessage(byteBuffer, null);
     }
 
     @Override

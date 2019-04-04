@@ -22,7 +22,6 @@ import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNAB
 import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.PONG;
 import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.SEND_ERROR;
 import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.STRING_MSG;
-import static com.zhangke.websocket.dispatcher.MainThreadResponseDelivery.RUNNABLE_TYPE.T_MSG;
 import static com.zhangke.websocket.util.ThreadUtil.checkMainThread;
 import static com.zhangke.websocket.util.ThreadUtil.runOnMainThread;
 
@@ -147,57 +146,40 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
     }
 
     @Override
-    public void onMessage(String message) {
+    public <T> void onMessage(String message, T data) {
         if (isEmpty() || message == null) {
             return;
         }
         if (checkMainThread()) {
             synchronized (LISTENER_BLOCK) {
                 for (SocketListener listener : mSocketListenerList) {
-                    listener.onMessage(message);
+                    listener.onMessage(message, data);
                 }
             }
         } else {
             CallbackRunnable callbackRunnable = getRunnable();
             callbackRunnable.type = STRING_MSG;
             callbackRunnable.textResponse = message;
+            callbackRunnable.formattedData = data;
             runOnMainThread(callbackRunnable);
         }
     }
 
     @Override
-    public void onMessage(ByteBuffer bytes) {
+    public <T> void onMessage(ByteBuffer bytes, T data) {
         if (isEmpty() || bytes == null) {
             return;
         }
         if (checkMainThread()) {
             synchronized (LISTENER_BLOCK) {
                 for (SocketListener listener : mSocketListenerList) {
-                    listener.onMessage(bytes);
+                    listener.onMessage(bytes, data);
                 }
             }
         } else {
             CallbackRunnable callbackRunnable = getRunnable();
             callbackRunnable.type = BYTE_BUFFER_MSG;
             callbackRunnable.byteResponse = bytes;
-            runOnMainThread(callbackRunnable);
-        }
-    }
-
-    @Override
-    public <T> void onMessage(T data) {
-        if (data == null || isEmpty()) {
-            return;
-        }
-        if (checkMainThread()) {
-            synchronized (LISTENER_BLOCK) {
-                for (SocketListener listener : mSocketListenerList) {
-                    listener.onMessage(data);
-                }
-            }
-        } else {
-            CallbackRunnable callbackRunnable = getRunnable();
-            callbackRunnable.type = T_MSG;
             callbackRunnable.formattedData = data;
             runOnMainThread(callbackRunnable);
         }
@@ -274,11 +256,14 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
         SEND_ERROR,//数据发送失败
         STRING_MSG,//接收到 String 数据
         BYTE_BUFFER_MSG,//接收到 ByteBuffer 数据
-        T_MSG,//转换后的泛型数据
         PING,//接收到 Ping
         PONG//接收到 Pong
     }
 
+    /**
+     * 避免频繁创建 Runnable 对象造成的内存浪费，
+     * 故此处使用可重用的 Runnable
+     */
     private static class CallbackRunnable<T> implements Runnable {
 
         List<SocketListener> mSocketListenerList = new ArrayList<>();
@@ -307,7 +292,6 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
                 if (type == BYTE_BUFFER_MSG && byteResponse == null) return;
                 if (type == PING && framedataResponse == null) return;
                 if (type == PONG && framedataResponse == null) return;
-                if (type == T_MSG && formattedData == null) return;
                 synchronized (LISTENER_BLOCK) {
                     switch (type) {
                         case CONNECTED:
@@ -332,17 +316,12 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
                             break;
                         case STRING_MSG:
                             for (SocketListener listener : mSocketListenerList) {
-                                listener.onMessage(textResponse);
+                                listener.onMessage(textResponse, formattedData);
                             }
                             break;
                         case BYTE_BUFFER_MSG:
                             for (SocketListener listener : mSocketListenerList) {
-                                listener.onMessage(byteResponse);
-                            }
-                            break;
-                        case T_MSG:
-                            for (SocketListener listener : mSocketListenerList) {
-                                listener.onMessage(formattedData);
+                                listener.onMessage(byteResponse, formattedData);
                             }
                             break;
                         case PING:
