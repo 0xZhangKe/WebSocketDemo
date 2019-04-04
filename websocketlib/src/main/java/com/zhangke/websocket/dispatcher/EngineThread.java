@@ -46,8 +46,6 @@ public class EngineThread extends Thread {
             } catch (InterruptedException e) {
                 if (stop) {
                     return;
-                } else {
-                    interrupt();
                 }
             } catch (Exception e) {
                 LogUtil.e(TAG, "run()->Exception", e);

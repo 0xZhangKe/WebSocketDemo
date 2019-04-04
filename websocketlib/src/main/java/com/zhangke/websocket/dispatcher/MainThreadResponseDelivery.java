@@ -85,6 +85,7 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
         } else {
             CallbackRunnable callbackRunnable = getRunnable();
             callbackRunnable.type = CONNECTED;
+            callbackRunnable.mSocketListenerList = mSocketListenerList;
             runOnMainThread(callbackRunnable);
         }
     }
@@ -104,6 +105,7 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
             CallbackRunnable callbackRunnable = getRunnable();
             callbackRunnable.type = CONNECT_FAILED;
             callbackRunnable.connectErrorCause = cause;
+            callbackRunnable.mSocketListenerList = mSocketListenerList;
             runOnMainThread(callbackRunnable);
         }
     }
@@ -122,6 +124,7 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
         } else {
             CallbackRunnable callbackRunnable = getRunnable();
             callbackRunnable.type = DISCONNECT;
+            callbackRunnable.mSocketListenerList = mSocketListenerList;
             runOnMainThread(callbackRunnable);
         }
     }
@@ -141,6 +144,7 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
             CallbackRunnable callbackRunnable = getRunnable();
             callbackRunnable.type = SEND_ERROR;
             callbackRunnable.errorResponse = errorResponse;
+            callbackRunnable.mSocketListenerList = mSocketListenerList;
             runOnMainThread(callbackRunnable);
         }
     }
@@ -161,6 +165,7 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
             callbackRunnable.type = STRING_MSG;
             callbackRunnable.textResponse = message;
             callbackRunnable.formattedData = data;
+            callbackRunnable.mSocketListenerList = mSocketListenerList;
             runOnMainThread(callbackRunnable);
         }
     }
@@ -181,6 +186,7 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
             callbackRunnable.type = BYTE_BUFFER_MSG;
             callbackRunnable.byteResponse = bytes;
             callbackRunnable.formattedData = data;
+            callbackRunnable.mSocketListenerList = mSocketListenerList;
             runOnMainThread(callbackRunnable);
         }
     }
@@ -200,6 +206,7 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
             CallbackRunnable callbackRunnable = getRunnable();
             callbackRunnable.type = PING;
             callbackRunnable.framedataResponse = framedata;
+            callbackRunnable.mSocketListenerList = mSocketListenerList;
             runOnMainThread(callbackRunnable);
         }
     }
@@ -219,6 +226,7 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
             CallbackRunnable callbackRunnable = getRunnable();
             callbackRunnable.type = PONG;
             callbackRunnable.framedataResponse = framedata;
+            callbackRunnable.mSocketListenerList = mSocketListenerList;
             runOnMainThread(callbackRunnable);
         }
     }
@@ -266,7 +274,7 @@ public class MainThreadResponseDelivery implements ResponseDelivery {
      */
     private static class CallbackRunnable<T> implements Runnable {
 
-        List<SocketListener> mSocketListenerList = new ArrayList<>();
+        List<SocketListener> mSocketListenerList;
 
         ErrorResponse errorResponse;
         Throwable connectErrorCause;
