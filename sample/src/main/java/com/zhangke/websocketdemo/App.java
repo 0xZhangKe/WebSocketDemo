@@ -19,7 +19,7 @@ public class App extends Application {
         WebSocketHandler.registerNetworkChangedReceiver(this);
 
         WebSocketSetting setting = new WebSocketSetting();
-        setting.setConnectUrl("wss://zldtest.zlddata.cn/wsapi");//必选
+        setting.setConnectUrl("Your connect url");//必选
         setting.setReconnectWithNetworkChanged(true);
         setting.setProcessDataOnBackground(true);
         setting.setReconnectFrequency(20);
