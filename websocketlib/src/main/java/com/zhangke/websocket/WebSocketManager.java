@@ -9,6 +9,7 @@ import com.zhangke.websocket.request.Request;
 import com.zhangke.websocket.request.RequestFactory;
 import com.zhangke.websocket.response.ErrorResponse;
 import com.zhangke.websocket.response.Response;
+import com.zhangke.websocket.response.ResponseFactory;
 import com.zhangke.websocket.util.LogUtil;
 
 import org.java_websocket.framing.Framedata;
@@ -347,7 +348,8 @@ public class WebSocketManager {
 
             @Override
             public void onSendDataError(Request request, int type, Throwable tr) {
-                ErrorResponse errorResponse = ErrorResponse.build(request, type, tr);
+                ErrorResponse errorResponse = ResponseFactory.createErrorResponse();
+                errorResponse.init(request, type, tr);
                 if (mSetting.processDataOnBackground()) {
                     mResponseProcessEngine
                             .onSendDataError(errorResponse,

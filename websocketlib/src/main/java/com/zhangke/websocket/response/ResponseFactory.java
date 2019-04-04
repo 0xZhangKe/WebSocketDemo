@@ -14,10 +14,19 @@ import java.util.Queue;
 public class ResponseFactory {
 
     private static final int POOL_SIZE = 7;
+    private static Queue<ErrorResponse> ERROR_RESPONSE_POOL = new ArrayDeque<>(POOL_SIZE);
     private static Queue<TextResponse> TEXT_RESPONSE_POOL = new ArrayDeque<>(POOL_SIZE);
     private static Queue<ByteBufferResponse> BYTE_BUFFER_RESPONSE_POOL = new ArrayDeque<>(POOL_SIZE);
     private static Queue<PingResponse> PING_RESPONSE_POOL = new ArrayDeque<>(POOL_SIZE);
     private static Queue<PongResponse> PONG_RESPONSE_POOL = new ArrayDeque<>(POOL_SIZE);
+
+    public static ErrorResponse createErrorResponse(){
+        ErrorResponse response = ERROR_RESPONSE_POOL.poll();
+        if(response == null){
+            response = new ErrorResponse();
+        }
+        return response;
+    }
 
     public static Response<String> createTextResponse() {
         Response<String> response = TEXT_RESPONSE_POOL.poll();
@@ -49,6 +58,10 @@ public class ResponseFactory {
             response = new PongResponse();
         }
         return response;
+    }
+
+    static void releaseErrorResponse(ErrorResponse response){
+        ERROR_RESPONSE_POOL.offer(response);
     }
 
     static void releaseTextResponse(TextResponse response) {

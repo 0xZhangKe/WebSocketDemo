@@ -11,7 +11,9 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 
 /**
- * 出现错误时的响应
+ * 出现错误时的响应，使用 {@link ResponseFactory#createErrorResponse()} 方法创建实例。
+ * 使用完后请使用 {@link #release()} 方法释放对象。
+ * </p>
  * Created by ZhangKe on 2018/6/25.
  */
 public class ErrorResponse {
@@ -28,27 +30,6 @@ public class ErrorResponse {
      * 初始化未完成
      */
     public static final int ERROR_UN_INIT = 2;
-
-    private static Queue<ErrorResponse> CACHE_QUEUE = new ArrayDeque<>(10);
-
-    private static ErrorResponse obtain() {
-        ErrorResponse request = CACHE_QUEUE.poll();
-        if (request == null) {
-            request = new ErrorResponse();
-        }
-        return request;
-    }
-
-    /**
-     * 构建一个 ErrorResponse
-     */
-    public static ErrorResponse build(Request request, int code, Throwable tr) {
-        ErrorResponse errorResponse = obtain();
-        errorResponse.setRequestData(request);
-        errorResponse.setCause(tr);
-        errorResponse.setErrorCode(code);
-        return errorResponse;
-    }
 
     /**
      * 错误信息
@@ -76,8 +57,17 @@ public class ErrorResponse {
      */
     private Object reserved;
 
-    private ErrorResponse() {
+    ErrorResponse() {
 
+    }
+
+    /**
+     * 初始化
+     */
+    public void init(Request request, int code, Throwable tr) {
+        this.requestData = request;
+        this.cause = tr;
+        this.errorCode = code;
     }
 
     /**
@@ -138,7 +128,7 @@ public class ErrorResponse {
     }
 
     public void release() {
-        CACHE_QUEUE.offer(this);
+        ResponseFactory.releaseErrorResponse(this);
     }
 
     @NonNull
