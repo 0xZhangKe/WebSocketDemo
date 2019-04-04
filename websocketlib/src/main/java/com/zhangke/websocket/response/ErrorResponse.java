@@ -1,18 +1,14 @@
 package com.zhangke.websocket.response;
 
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
-import com.zhangke.websocket.request.ByteArrayRequest;
 import com.zhangke.websocket.request.Request;
-
-import java.nio.ByteBuffer;
-import java.util.ArrayDeque;
-import java.util.Queue;
 
 /**
  * 出现错误时的响应，使用 {@link ResponseFactory#createErrorResponse()} 方法创建实例。
  * 使用完后请使用 {@link #release()} 方法释放对象。
+ * 除了下面定义的三种错误类型外（对应的值为0、1/2），
+ * 用户可自定义自己的错误码，例如 11：数据解析 JSON 错误。
  * </p>
  * Created by ZhangKe on 2018/6/25.
  */
