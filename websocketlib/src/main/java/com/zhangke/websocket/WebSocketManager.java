@@ -25,7 +25,7 @@ import java.util.Collection;
  */
 public class WebSocketManager {
 
-    private static final String TAG = "WebSocketManager";
+    private static final String TAG = "WSManager";
 
     private WebSocketSetting mSetting;
 
@@ -276,6 +276,9 @@ public class WebSocketManager {
         if (mWebSocket.getConnectState() == 0) {
             mWebSocketEngine.connect(mWebSocket, mSocketWrapperListener);
         } else {
+            if(mReconnectManager != null){
+                mReconnectManager.onConnected();
+            }
             LogUtil.e(TAG, "WebSocket 已连接，请勿重试。");
         }
     }
@@ -343,6 +346,7 @@ public class WebSocketManager {
                 if (mReconnectManager == null) {
                     mReconnectManager = getDefaultReconnectManager();
                 }
+                mReconnectManager.onConnectError(null);
                 mReconnectManager.startReconnect();
             }
 

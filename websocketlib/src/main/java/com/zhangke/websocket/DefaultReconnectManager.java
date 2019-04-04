@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
  */
 public class DefaultReconnectManager implements ReconnectManager {
 
-    private static final String TAG = "WebSocketLib";
+    private static final String TAG = "WSDefaultRM";
 
     /**
      * 重连锁
@@ -66,11 +66,7 @@ public class DefaultReconnectManager implements ReconnectManager {
         }
         needStopReconnect = false;
         reconnecting = true;
-        if (singleThreadPool.isTerminated()) {
-            singleThreadPool.execute(getReconnectRunnable());
-        } else {
-            LogUtil.e(TAG, "重连线程池中有线程未结束，取消本次重连。");
-        }
+        singleThreadPool.execute(getReconnectRunnable());
     }
 
     private Runnable getReconnectRunnable() {
@@ -88,18 +84,20 @@ public class DefaultReconnectManager implements ReconnectManager {
                     for (int i = 0; i < count; i++) {
                         LogUtil.i(TAG, String.format("第%s次重连", i + 1));
                         mWebSocketManager.reconnectOnce();
-                        try {
-                            BLOCK.wait();
-                            if (connected) {
-                                LogUtil.i(TAG, "reconnectOnce success!");
-                                mOnDisconnectListener.onConnected();
-                                return;
-                            }
-                            if (needStopReconnect) {
+                        synchronized (BLOCK) {
+                            try {
+                                BLOCK.wait();
+                                if (connected) {
+                                    LogUtil.i(TAG, "reconnectOnce success!");
+                                    mOnDisconnectListener.onConnected();
+                                    return;
+                                }
+                                if (needStopReconnect) {
+                                    break;
+                                }
+                            } catch (InterruptedException e) {
                                 break;
                             }
-                        } catch (InterruptedException e) {
-                            break;
                         }
                     }
                     //重连失败
@@ -107,6 +105,7 @@ public class DefaultReconnectManager implements ReconnectManager {
                     mOnDisconnectListener.onDisconnect();
                 } finally {
                     reconnecting = false;
+                    LogUtil.i(TAG, "reconnecting = false");
                 }
             }
         };
@@ -123,13 +122,19 @@ public class DefaultReconnectManager implements ReconnectManager {
     @Override
     public void onConnected() {
         connected = true;
-        BLOCK.notifyAll();
+        synchronized (BLOCK) {
+            LogUtil.i(TAG, "onConnected()->BLOCK.notifyAll()");
+            BLOCK.notifyAll();
+        }
     }
 
     @Override
     public void onConnectError(Throwable th) {
         connected = false;
-        BLOCK.notifyAll();
+        synchronized (BLOCK) {
+            LogUtil.i(TAG, "onConnectError(Throwable)->BLOCK.notifyAll()");
+            BLOCK.notifyAll();
+        }
     }
 
     /**
