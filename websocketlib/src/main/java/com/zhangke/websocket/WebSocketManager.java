@@ -276,7 +276,7 @@ public class WebSocketManager {
         if (mWebSocket.getConnectState() == 0) {
             mWebSocketEngine.connect(mWebSocket, mSocketWrapperListener);
         } else {
-            if(mReconnectManager != null){
+            if (mReconnectManager != null) {
                 mReconnectManager.onConnected();
             }
             LogUtil.e(TAG, "WebSocket 已连接，请勿重试。");
@@ -361,6 +361,10 @@ public class WebSocketManager {
                                     mDelivery);
                 } else {
                     mSetting.getResponseDispatcher().onSendDataError(errorResponse, mDelivery);
+                }
+                if (type == ErrorResponse.ERROR_NO_CONNECT) {
+                    LogUtil.e(TAG, "数据发送失败，网络未连接，开始重连。。。");
+                    reconnect();
                 }
                 //todo 使用完注意释放资源 request.release();
             }
