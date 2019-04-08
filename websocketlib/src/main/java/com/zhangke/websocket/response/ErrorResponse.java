@@ -138,7 +138,9 @@ public class ErrorResponse {
         builder.append(errorCode);
         builder.append(",");
         builder.append("cause=");
-        builder.append(cause.toString());
+        builder.append(cause == null ?
+                "null" :
+                cause.toString());
         builder.append(",");
         builder.append("requestData=");
         String request;
