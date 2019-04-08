@@ -89,9 +89,6 @@ public class WebSocketSetting {
      * 不设置则使用 {@link DefaultResponseDispatcher}
      */
     public void setResponseProcessDispatcher(IResponseDispatcher responseDispatcher) {
-        if (responseProcessDispatcher == null) {
-            return;
-        }
         this.responseProcessDispatcher = responseDispatcher;
     }
 
