@@ -37,7 +37,6 @@ public class AppResponseDispatcher extends SimpleDispatcher {
                 break;
             case 11:
                 error.setDescription("数据格式异常");
-                Log.e(LOGTAG, "数据格式异常", error.getCause());
                 break;
         }
         delivery.onSendDataError(error);

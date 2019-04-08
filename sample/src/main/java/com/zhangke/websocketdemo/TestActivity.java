@@ -5,22 +5,18 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.alibaba.fastjson.JSONObject;
-import com.zhangke.websocket.SimpleListener;
 import com.zhangke.websocket.SocketListener;
 import com.zhangke.websocket.WebSocketHandler;
 import com.zhangke.websocket.response.ErrorResponse;
-import com.zhangke.websocket.response.Response;
 
 import org.java_websocket.framing.Framedata;
 
 import java.nio.ByteBuffer;
 
-public class LoginActivity extends AppCompatActivity {
+public class TestActivity extends AppCompatActivity {
 
     private EditText etContent;
     private TextView tvMsg;
@@ -82,7 +78,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_test);
 
         initView();
 
@@ -99,7 +95,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String text = etContent.getText().toString();
                 if (TextUtils.isEmpty(text)) {
-                    UiUtil.showToast(LoginActivity.this, "输入不能为空");
+                    UiUtil.showToast(TestActivity.this, "输入不能为空");
                     return;
                 }
                 WebSocketHandler.getDefault().send(text);
