@@ -4,6 +4,7 @@ import com.zhangke.websocket.util.LogUtil;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * 负责 WebSocket 重连
@@ -66,8 +67,16 @@ public class DefaultReconnectManager implements ReconnectManager {
         }
         needStopReconnect = false;
         reconnecting = true;
-        singleThreadPool.execute(getReconnectRunnable());
+        try {
+            singleThreadPool.execute(getReconnectRunnable());
+        } catch (RejectedExecutionException e) {
+            LogUtil.e(TAG, "线程队列已满，无法执行此次任务。", e);
+            reconnecting = false;
+        }
     }
+
+    private int reconnectCount = 1;
+    private int finishCount = 1;
 
     private Runnable getReconnectRunnable() {
         return new Runnable() {
@@ -77,6 +86,8 @@ public class DefaultReconnectManager implements ReconnectManager {
                     reconnecting = false;
                     return;
                 }
+                LogUtil.d(TAG, "开始重连:" + reconnectCount);
+                reconnectCount++;
                 reconnecting = true;
                 connected = false;
                 try {
@@ -86,7 +97,7 @@ public class DefaultReconnectManager implements ReconnectManager {
                         mWebSocketManager.reconnectOnce();
                         synchronized (BLOCK) {
                             try {
-                                BLOCK.wait();
+                                BLOCK.wait(mWebSocketManager.getSetting().getConnectTimeout());
                                 if (connected) {
                                     LogUtil.i(TAG, "reconnectOnce success!");
                                     mOnDisconnectListener.onConnected();
@@ -104,6 +115,8 @@ public class DefaultReconnectManager implements ReconnectManager {
                     LogUtil.i(TAG, "reconnectOnce failed!");
                     mOnDisconnectListener.onDisconnect();
                 } finally {
+                    LogUtil.d(TAG, "重连结束:" + finishCount);
+                    finishCount++;
                     reconnecting = false;
                     LogUtil.i(TAG, "reconnecting = false");
                 }

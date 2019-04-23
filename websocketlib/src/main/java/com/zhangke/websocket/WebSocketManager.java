@@ -109,6 +109,7 @@ public class WebSocketManager {
         this.mSetting = setting;
         if (mWebSocket != null) {
             mWebSocket.destroy();
+            mWebSocket = null;
         }
         init();
         return this;
