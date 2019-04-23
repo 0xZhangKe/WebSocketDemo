@@ -6,10 +6,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.zhangke.websocket.SocketListener;
 import com.zhangke.websocket.WebSocketHandler;
+import com.zhangke.websocket.WebSocketSetting;
 import com.zhangke.websocket.response.ErrorResponse;
 
 import org.java_websocket.framing.Framedata;
@@ -20,6 +22,7 @@ public class TestActivity extends AppCompatActivity {
 
     private EditText etContent;
     private TextView tvMsg;
+    private ScrollView scrollView;
 
     private SocketListener socketListener = new SocketListener() {
         @Override
@@ -89,6 +92,7 @@ public class TestActivity extends AppCompatActivity {
     private void initView() {
         etContent = (EditText) findViewById(R.id.et_content);
         tvMsg = (TextView) findViewById(R.id.tv_msg);
+        scrollView = (ScrollView) findViewById(R.id.scroll_view);
 
         findViewById(R.id.btn_send).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,6 +103,14 @@ public class TestActivity extends AppCompatActivity {
                     return;
                 }
                 WebSocketHandler.getDefault().send(text);
+            }
+        });
+        findViewById(R.id.btn_reconnect).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                WebSocketSetting setting = WebSocketHandler.getDefault().getSetting();
+                setting.setConnectUrl("new connect url");
+                WebSocketHandler.getDefault().reconnect(setting);
             }
         });
     }
@@ -118,5 +130,6 @@ public class TestActivity extends AppCompatActivity {
         textBuilder.append(msg);
         textBuilder.append("\n");
         tvMsg.setText(textBuilder.toString());
+        scrollView.fullScroll(ScrollView.FOCUS_DOWN);
     }
 }

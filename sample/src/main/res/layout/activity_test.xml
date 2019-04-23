@@ -23,7 +23,17 @@
         android:layout_marginRight="30dp"
         android:text="SEND" />
 
+    <Button
+        android:id="@+id/btn_reconnect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="30dp"
+        android:text="RECONNECT" />
+
     <ScrollView
+        android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
