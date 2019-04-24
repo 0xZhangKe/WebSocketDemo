@@ -349,14 +349,24 @@ public class WebSocketManager {
 
             @Override
             public void onDisconnect() {
-                mSetting.getResponseDispatcher()
-                        .onDisconnect(mDelivery);
-                if (!disconnect) {
-                    if (mReconnectManager == null) {
-                        mReconnectManager = getDefaultReconnectManager();
+                if (mReconnectManager != null &&
+                        mReconnectManager.reconnecting()) {
+                    if (disconnect) {
+                        mSetting.getResponseDispatcher()
+                                .onDisconnect(mDelivery);
+                    } else {
+                        mReconnectManager.onConnectError(null);
                     }
-                    mReconnectManager.onConnectError(null);
-                    mReconnectManager.startReconnect();
+                } else {
+                    mSetting.getResponseDispatcher()
+                            .onDisconnect(mDelivery);
+                    if (!disconnect) {
+                        if (mReconnectManager == null) {
+                            mReconnectManager = getDefaultReconnectManager();
+                        }
+                        mReconnectManager.onConnectError(null);
+                        mReconnectManager.startReconnect();
+                    }
                 }
             }
 
