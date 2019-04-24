@@ -42,6 +42,10 @@ public class WebSocketManager {
      * 当前是否已销毁
      */
     private boolean destroyed = false;
+    /**
+     * 用户调用了 disconnect 方法后为 true
+     */
+    private boolean disconnect = false;
 
     private WebSocketEngine mWebSocketEngine;
     private ResponseProcessEngine mResponseProcessEngine;
@@ -89,6 +93,7 @@ public class WebSocketManager {
      * 通过 {@link ReconnectManager} 开始重接
      */
     public WebSocketManager reconnect() {
+        disconnect = false;
         if (mReconnectManager == null) {
             mReconnectManager = getDefaultReconnectManager();
         }
@@ -102,6 +107,7 @@ public class WebSocketManager {
      * 使用新的 Setting 重新创建连接，同时会销毁之前的连接
      */
     public WebSocketManager reconnect(WebSocketSetting setting) {
+        disconnect = false;
         if (destroyed) {
             LogUtil.e(TAG, "This WebSocketManager is destroyed!");
             return this;
@@ -119,6 +125,7 @@ public class WebSocketManager {
      * 断开连接，断开后可使用 {@link this#reconnect()} 方法重新建立连接
      */
     public WebSocketManager disConnect() {
+        disconnect = true;
         if (destroyed) {
             LogUtil.e(TAG, "This WebSocketManager is destroyed!");
             return this;
@@ -344,11 +351,13 @@ public class WebSocketManager {
             public void onDisconnect() {
                 mSetting.getResponseDispatcher()
                         .onDisconnect(mDelivery);
-                if (mReconnectManager == null) {
-                    mReconnectManager = getDefaultReconnectManager();
+                if (!disconnect) {
+                    if (mReconnectManager == null) {
+                        mReconnectManager = getDefaultReconnectManager();
+                    }
+                    mReconnectManager.onConnectError(null);
+                    mReconnectManager.startReconnect();
                 }
-                mReconnectManager.onConnectError(null);
-                mReconnectManager.startReconnect();
             }
 
             @Override
@@ -363,7 +372,7 @@ public class WebSocketManager {
                 } else {
                     mSetting.getResponseDispatcher().onSendDataError(errorResponse, mDelivery);
                 }
-                if (type == ErrorResponse.ERROR_NO_CONNECT) {
+                if (!disconnect && type == ErrorResponse.ERROR_NO_CONNECT) {
                     LogUtil.e(TAG, "数据发送失败，网络未连接，开始重连。。。");
                     reconnect();
                 }
