@@ -34,7 +34,7 @@ public class WebSocketSetting {
     /**
      * 设置网络连接变化后是否自动重连。
      */
-    private boolean reconnectWithNetworkChanged;
+    private boolean reconnectWithNetworkChanged = true;
     /**
      * 代理
      */
