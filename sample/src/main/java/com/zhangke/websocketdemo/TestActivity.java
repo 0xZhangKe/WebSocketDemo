@@ -32,9 +32,9 @@ public class TestActivity extends AppCompatActivity {
 
         @Override
         public void onConnectFailed(Throwable e) {
-            if(e != null){
+            if (e != null) {
                 appendMsgDisplay("onConnectFailed:" + e.toString());
-            }else{
+            } else {
                 appendMsgDisplay("onConnectFailed:null");
             }
         }
@@ -61,18 +61,18 @@ public class TestActivity extends AppCompatActivity {
 
         @Override
         public void onPing(Framedata framedata) {
-            if(framedata != null){
+            if (framedata != null) {
                 appendMsgDisplay("onPing:" + framedata.toString());
-            }else{
+            } else {
                 appendMsgDisplay("onPing:null");
             }
         }
 
         @Override
         public void onPong(Framedata framedata) {
-            if(framedata != null){
+            if (framedata != null) {
                 appendMsgDisplay("onPong:" + framedata.toString());
-            }else{
+            } else {
                 appendMsgDisplay("onPong:null");
             }
         }
@@ -108,9 +108,22 @@ public class TestActivity extends AppCompatActivity {
         findViewById(R.id.btn_reconnect).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                WebSocketSetting setting = WebSocketHandler.getDefault().getSetting();
-                setting.setConnectUrl("new connect url");
-                WebSocketHandler.getDefault().reconnect(setting);
+//                WebSocketSetting setting = WebSocketHandler.getDefault().getSetting();
+//                setting.setConnectUrl("url");
+//                WebSocketHandler.getDefault().reconnect(setting);
+                WebSocketHandler.getDefault().reconnect();
+            }
+        });
+        findViewById(R.id.btn_disconnect).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                WebSocketHandler.getDefault().disConnect();
+            }
+        });
+        findViewById(R.id.btn_clear).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tvMsg.setText("");
             }
         });
     }
@@ -121,15 +134,20 @@ public class TestActivity extends AppCompatActivity {
         WebSocketHandler.getDefault().removeListener(socketListener);
     }
 
-    private void appendMsgDisplay(String msg){
+    private void appendMsgDisplay(String msg) {
         StringBuilder textBuilder = new StringBuilder();
-        if(!TextUtils.isEmpty(tvMsg.getText())){
+        if (!TextUtils.isEmpty(tvMsg.getText())) {
             textBuilder.append(tvMsg.getText().toString());
             textBuilder.append("\n");
         }
         textBuilder.append(msg);
         textBuilder.append("\n");
         tvMsg.setText(textBuilder.toString());
-        scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+        tvMsg.post(new Runnable() {
+            @Override
+            public void run() {
+                scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+            }
+        });
     }
 }

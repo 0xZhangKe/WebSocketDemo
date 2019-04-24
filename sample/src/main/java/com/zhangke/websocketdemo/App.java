@@ -19,7 +19,7 @@ public class App extends Application {
         WebSocketHandler.registerNetworkChangedReceiver(this);
 
         WebSocketSetting setting = new WebSocketSetting();
-        setting.setConnectUrl("your connect url");//必填
+        setting.setConnectUrl("url");//必填
         setting.setReconnectWithNetworkChanged(true);
         setting.setProcessDataOnBackground(true);
         setting.setReconnectFrequency(20);
