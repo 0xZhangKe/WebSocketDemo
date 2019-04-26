@@ -46,7 +46,7 @@ public class WebSocketEngine {
     void connect(WebSocketWrapper webSocket,
                  SocketWrapperListener listener) {
         if (mOptionThread.mHandler == null) {
-            listener.onConnectFailed(new Exception("WebSocketEngine not init!"));
+            listener.onConnectFailed(new Exception("WebSocketEngine not start!"));
         }else{
             ReRunnable runnable = ReRunnable.obtain();
             runnable.type = 1;
@@ -63,7 +63,7 @@ public class WebSocketEngine {
             runnable.webSocketWrapper = webSocket;
             mOptionThread.mHandler.post(runnable);
         }else{
-            LogUtil.e(TAG, "WebSocketEngine not init!");
+            LogUtil.e(TAG, "WebSocketEngine not start!");
         }
     }
 
@@ -74,7 +74,7 @@ public class WebSocketEngine {
             runnable.webSocketWrapper = webSocket;
             mOptionThread.mHandler.post(runnable);
         }else{
-            LogUtil.e(TAG, "WebSocketEngine not init!");
+            LogUtil.e(TAG, "WebSocketEngine not start!");
         }
     }
 
