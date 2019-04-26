@@ -68,7 +68,7 @@ public class WebSocketHandler {
                 }
             }
         } else {
-            LogUtil.e(TAG, "Default WebSocketManager exists!do not init again!");
+            LogUtil.e(TAG, "Default WebSocketManager exists!do not start again!");
         }
         return defaultWebSocket;
     }
@@ -85,7 +85,7 @@ public class WebSocketHandler {
         checkWebSocketMapNullAndInit();
         synchronized (WS_MAP_BLOCK) {
             if (mWebSocketMap.containsKey(key)) {
-                LogUtil.e(TAG, "WebSocketManager exists!do not init again!");
+                LogUtil.e(TAG, "WebSocketManager exists!do not start again!");
                 return mWebSocketMap.get(key);
             } else {
                 WebSocketManager wsm = new WebSocketManager(setting,

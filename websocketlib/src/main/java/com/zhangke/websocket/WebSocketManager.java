@@ -65,13 +65,13 @@ public class WebSocketManager {
         if (mWebSocket == null) {
             mWebSocket = new WebSocketWrapper(this.mSetting, mSocketWrapperListener);
         }
-        init();
+        start();
     }
 
     /**
-     * 初始化，调用此方法开始连接
+     * 启动，调用此方法开始连接
      */
-    public WebSocketManager init() {
+    public WebSocketManager start() {
         if (mWebSocket == null) {
             mWebSocket = new WebSocketWrapper(this.mSetting, mSocketWrapperListener);
         }
@@ -117,7 +117,7 @@ public class WebSocketManager {
             mWebSocket.destroy();
             mWebSocket = null;
         }
-        init();
+        start();
         return this;
     }
 
