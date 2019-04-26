@@ -1,1 +1,3 @@
-include ':sample', ':websocketlib'
+include ':websocketlib'
+include ':samples:dispatersample'
+include ':samples:simple'
