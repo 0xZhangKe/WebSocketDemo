@@ -1,7 +1,5 @@
 package com.zhangke.websocket.request;
 
-import android.support.annotation.NonNull;
-
 import org.java_websocket.client.WebSocketClient;
 
 import java.nio.ByteBuffer;
@@ -38,7 +36,6 @@ public class ByteBufferRequest implements Request<ByteBuffer> {
         RequestFactory.releaseByteBufferRequest(this);
     }
 
-    @NonNull
     @Override
     public String toString() {
         return String.format("[@ByteBufferRequest%s,ByteBuffer:%s]",

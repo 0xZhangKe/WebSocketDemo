@@ -1,7 +1,5 @@
 package com.zhangke.websocket.request;
 
-import android.support.annotation.NonNull;
-
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.PingFrame;
 import org.java_websocket.framing.PongFrame;
@@ -51,7 +49,6 @@ public class PongRequest implements Request<PingFrame> {
         RequestFactory.releasePongRequest(this);
     }
 
-    @NonNull
     @Override
     public String toString() {
         return String.format("[@PongRequest%s,PingFrame:%s]",

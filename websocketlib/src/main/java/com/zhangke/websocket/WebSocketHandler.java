@@ -2,11 +2,9 @@ package com.zhangke.websocket;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.zhangke.websocket.dispatcher.ResponseProcessEngine;
@@ -52,7 +50,7 @@ public class WebSocketHandler {
      *
      * @param setting 该连接的相关设置参数
      */
-    public static WebSocketManager initDefaultWebSocket(WebSocketSetting setting) {
+    public static WebSocketManager init(WebSocketSetting setting) {
         if (defaultWebSocket == null) {
             synchronized (WebSocketHandler.class) {
                 if (webSocketEngine == null) {
@@ -99,7 +97,7 @@ public class WebSocketHandler {
 
     /**
      * 获取默认的 WebSocket 连接，
-     * 调用此方法之前需要先调用 {@link #initDefaultWebSocket(WebSocketSetting)} 方法初始化
+     * 调用此方法之前需要先调用 {@link #init(WebSocketSetting)} 方法初始化
      *
      * @return 返回一个 {@link WebSocketManager} 实例
      */
@@ -113,7 +111,7 @@ public class WebSocketHandler {
      * @param key 该 WebSocketManager 的 key
      * @return 可能为空，代表该 WebSocketManager 对象不存在或已移除
      */
-    public static WebSocketManager getGeneralWebSocket(String key) {
+    public static WebSocketManager getWebSocket(String key) {
         checkWebSocketMapNullAndInit();
         if (mWebSocketMap.containsKey(key)) {
             return mWebSocketMap.get(key);
@@ -125,7 +123,7 @@ public class WebSocketHandler {
     /**
      * 获取所有 WebSocketManager（defaultWebSocketManager 除外）
      */
-    public static Map<String, WebSocketManager> getAllWebSocket(){
+    public static Map<String, WebSocketManager> getAllWebSocket() {
         checkWebSocketMapNullAndInit();
         return mWebSocketMap;
     }
@@ -136,7 +134,7 @@ public class WebSocketHandler {
      * @param key 该 WebSocketManager 的 key
      * @return 返回移除的 WebSocketManager，可能为空
      */
-    public static WebSocketManager removeGeneralWebSocket(String key) {
+    public static WebSocketManager removeWebSocket(String key) {
         checkWebSocketMapNullAndInit();
         if (mWebSocketMap.containsKey(key)) {
             WebSocketManager removed = mWebSocketMap.get(key);
@@ -155,14 +153,12 @@ public class WebSocketHandler {
      * @param context 此处应该使用 ApplicationContext，避免内存泄漏以及其它异常。
      */
     public static void registerNetworkChangedReceiver(Context context) {
-        int permissionCheck = ContextCompat.checkSelfPermission(context,
-                Manifest.permission.ACCESS_NETWORK_STATE);
-        if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+        try {
             IntentFilter filter = new IntentFilter();
             filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
             context.registerReceiver(new NetworkChangedReceiver(), filter);
-        } else {
-            Log.e(TAG, "未获取到网络状态变化的权限，无法注册监听广播！");
+        } catch (Exception e) {
+            LogUtil.e(TAG, "网络监听广播注册失败：", e);
         }
     }
 

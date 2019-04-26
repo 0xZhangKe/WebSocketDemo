@@ -1,7 +1,5 @@
 package com.zhangke.websocket.request;
 
-import android.support.annotation.NonNull;
-
 import org.java_websocket.client.WebSocketClient;
 
 /**
@@ -36,7 +34,6 @@ public class ByteArrayRequest implements Request<byte[]> {
         RequestFactory.releaseByteArrayRequest(this);
     }
 
-    @NonNull
     @Override
     public String toString() {
         return String.format("[@ByteArrayRequest%s,%s]",

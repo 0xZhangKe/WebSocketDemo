@@ -1,7 +1,5 @@
 package com.zhangke.websocket.request;
 
-import android.support.annotation.NonNull;
-
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.Framedata;
 
@@ -39,7 +37,6 @@ public class CollectionFrameDataRequest implements Request<Collection<Framedata>
         RequestFactory.releaseCollectionFrameRequest(this);
     }
 
-    @NonNull
     @Override
     public String toString() {
         return String.format("[@CollectionFrameDataRequest%s,Collection<Framedata>:%s]",

@@ -1,6 +1,5 @@
 package com.zhangke.websocket.response;
 
-import android.support.annotation.NonNull;
 
 import com.zhangke.websocket.dispatcher.IResponseDispatcher;
 import com.zhangke.websocket.dispatcher.ResponseDelivery;
@@ -40,7 +39,6 @@ public class PongResponse implements Response<Framedata> {
         ResponseFactory.releasePongResponse(this);
     }
 
-    @NonNull
     @Override
     public String toString() {
         return String.format("[@PongResponse%s->Framedata:%s]",

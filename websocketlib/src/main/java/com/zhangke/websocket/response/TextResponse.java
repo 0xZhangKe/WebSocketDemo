@@ -1,6 +1,5 @@
 package com.zhangke.websocket.response;
 
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.zhangke.websocket.dispatcher.IResponseDispatcher;
@@ -34,7 +33,6 @@ public class TextResponse implements Response<String> {
         release();
     }
 
-    @NonNull
     @Override
     public String toString() {
         return String.format("[@TextResponse%s->responseText:%s]",

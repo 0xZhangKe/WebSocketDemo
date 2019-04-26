@@ -1,12 +1,10 @@
 package com.zhangke.websocket;
 
-import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.annotation.RequiresPermission;
 
 import com.zhangke.websocket.util.LogUtil;
 
@@ -23,7 +21,6 @@ public class NetworkChangedReceiver extends BroadcastReceiver {
     public NetworkChangedReceiver() {
     }
 
-    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     @Override
     public void onReceive(Context context, Intent intent) {
         if (ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction())) {

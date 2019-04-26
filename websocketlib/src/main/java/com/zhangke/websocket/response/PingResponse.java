@@ -1,7 +1,5 @@
 package com.zhangke.websocket.response;
 
-import android.support.annotation.NonNull;
-
 import com.zhangke.websocket.dispatcher.IResponseDispatcher;
 import com.zhangke.websocket.dispatcher.ResponseDelivery;
 
@@ -40,7 +38,6 @@ public class PingResponse implements Response<Framedata> {
         ResponseFactory.releasePingResponse(this);
     }
 
-    @NonNull
     @Override
     public String toString() {
         return String.format("[@PingResponse%s->Framedata:%s]",

@@ -1,7 +1,5 @@
 package com.zhangke.websocket.response;
 
-import android.support.annotation.NonNull;
-
 import com.zhangke.websocket.request.Request;
 
 /**
@@ -127,7 +125,6 @@ public class ErrorResponse {
         ResponseFactory.releaseErrorResponse(this);
     }
 
-    @NonNull
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();

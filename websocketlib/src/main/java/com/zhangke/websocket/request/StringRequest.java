@@ -1,6 +1,5 @@
 package com.zhangke.websocket.request;
 
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.java_websocket.client.WebSocketClient;
@@ -37,7 +36,6 @@ public class StringRequest implements Request<String> {
         RequestFactory.releaseStringRequest(this);
     }
 
-    @NonNull
     @Override
     public String toString() {
         return String.format("@StringRequest%s,requestText:%s",

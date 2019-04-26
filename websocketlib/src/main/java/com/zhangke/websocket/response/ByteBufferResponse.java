@@ -1,7 +1,5 @@
 package com.zhangke.websocket.response;
 
-import android.support.annotation.NonNull;
-
 import com.zhangke.websocket.dispatcher.IResponseDispatcher;
 import com.zhangke.websocket.dispatcher.ResponseDelivery;
 
@@ -35,7 +33,6 @@ public class ByteBufferResponse implements Response<ByteBuffer> {
         release();
     }
 
-    @NonNull
     @Override
     public String toString() {
         return String.format("[@ByteBufferResponse%s->ByteBuffer:%s]",
