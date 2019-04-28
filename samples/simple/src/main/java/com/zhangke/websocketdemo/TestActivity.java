@@ -46,6 +46,7 @@ public class TestActivity extends AppCompatActivity {
         @Override
         public void onSendDataError(ErrorResponse errorResponse) {
             appendMsgDisplay("onSendDataError:" + errorResponse.toString());
+            errorResponse.release();
         }
 
         @Override
