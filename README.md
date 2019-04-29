@@ -35,6 +35,8 @@ maven { url = 'https://jitpack.io' }
 
 ## 开始使用
 此时你已经把框架集成到项目中了，再经过简单的几步配置即可使用。
+
+### 基本配置
 首先，最基本的，我们要配置 WebSocket 连接地址，要说明的是，关于 WebSocket 的相关配置都在 [WebSocketSetting](https://github.com/0xZhangKe/WebSocketDemo/blob/3.0/websocketlib/src/main/java/com/zhangke/websocket/WebSocketSetting.java) 中。
 我们通过如下的代码设置连接地址：
 ```java
@@ -64,6 +66,7 @@ setting.setReconnectWithNetworkChanged(true);
 ```
 上面基本上包含了我们常用的一些配置了，详细介绍可[查看文档](https://github.com/0xZhangKe/WebSocketDemo/tree/3.0/doc)，或者直接问我。
 
+### 初始化与连接
 设置好之后就可直接开始连接啦，上面说过连接使用 WebSocketHandler 来操作，具体如下：
 ```java
 //通过 init 方法初始化默认的 WebSocketManager 对象
@@ -73,3 +76,128 @@ manager.start();
 ```
 我们对 WebSocket 的连接管理、数据收发，本质上是使用 [WebSocketManager](https://github.com/0xZhangKe/WebSocketDemo/blob/3.0/websocketlib/src/main/java/com/zhangke/websocket/WebSocketManager.java) 来实现。
 上面的 WebSocketHandler.init(setting) 方法也是为了获取一个默认的 WebSocketManager 对象。
+
+此时默认的 WebSocketManager 已经初始化并且正在连接了，一般来说都是启动 APP 同时建立 WebSocket 连接，所以建议上述配置及初始化代码放在 Application 中运行。
+
+后面我们需要使用 WebSocketManager 收发数据、管理连接时直接通过下面的代码即可获取到实例：
+```java
+//通过此方法获取默认的 WebSocketManager 对象
+WebSocketManager manager = WebSocketHandler.getDefault();
+```
+
+### 数据收发
+当我们初始化完成后，即可使用默认的 WebSocketManager 来进行发送数据与接收数据。
+WebSocketManager 中提供了一系列的 send 方法用于发送数据：
+```java
+//发送 String 数据
+void send(String text);
+//发送 byte[] 数据
+void send(byte[] bytes);
+//发送 ByteBuffer 数据
+void send(ByteBuffer byteBuffer);
+```
+除了上述三个常规的发送数据方法外，还提供了用于发送 ping/pong 的方法：
+```java
+//发送 ping
+void sendPing();
+//发送 pong
+void sendPong();
+//发送 pong
+void sendPong(PingFrame pingFrame);
+```
+以及两个可自定义的帧数据发送方法：
+```java
+//发送 Framedata
+void sendFrame(Framedata framedata);
+//发送 Framedata 集合
+void sendFrame(Collection<Framedata> frameData);
+```
+上面的几个发送数据的方法基本上囊括了所有应用场景，那么说完了发送数据再来说接收数据。
+
+数据的接收通过对 WebSocketManager 添加 [SocketListener](https://github.com/0xZhangKe/WebSocketDemo/blob/3.0/websocketlib/src/main/java/com/zhangke/websocket/SocketListener.java) 监听器来实现。
+我们通过如下代码添加数据接收监听器：
+```java
+manager.addListener(socketListener);
+```
+SocketListener 中的回调方法较多，为了节省篇幅我就挑两个重要的讲一下：
+```java
+// 数据发送失败
+void onSendDataError(ErrorResponse errorResponse);
+//接收到文本消息
+<T> void onMessage(String message, T data);
+//接收到二进制消息
+<T> void onMessage(ByteBuffer bytes, T data);
+```
+第一个发送失败方法 onSendDataError 指的是 WebSocket 未连接或其他愿意导致数据未发送成功，ErrorResponse 中包含了失败的原因。
+
+onMessage(String, T) 方法显然是接收到 String 类型消息的回调，那泛型 T 是什么意思呢？T 是消息分发器中处理完成后返回的数据，具体后面会介绍。
+
+onMessage(ByteBuffer, T) 方法类似上面说的，只不过收到的是 ByteBuffer 类型的数据。
+
+那么到这里关于数据的接收就说完啦。
+
+### 消息处理分发器
+消息分发器在这里是个很重要的概念，这是用来在接收到消息后进行预处理，然后再回调给各个接收点的中间件。
+这里放一张流程图帮助理解：
+
+![消息处理分发器](image/dispatcher.png)
+
+那么关于消息处理器应该如何使用呢，其实非常简单，我在上面配置信息那里也讲到了 IResponseDispatcher 接口。
+首先需要定义一个实现了该接口的类，然后创建一个该类的实例，在 WebSocket 配置时调用 setting.setResponseProcessDispatcher 方法将该实例设置进去即可。
+
+关于他的使用场景，具体而言，我们在接收到数据时应该对数据进行统一的处理判断，然后再将其发送到下游接收点，处理数据时会将数据转换为统一的数据结构，具体的结构根据公司业务有所不同。
+
+我们主要关注其中两个方法：
+```java
+// 接收到文本消息
+void onMessage(String message, ResponseDelivery delivery);
+//接收到二进制消息
+void onMessage(ByteBuffer byteBuffer, ResponseDelivery delivery);
+```
+这里出现了一个陌生的概念：[ResponseDelivery](https://github.com/0xZhangKe/WebSocketDemo/blob/3.0/websocketlib/src/main/java/com/zhangke/websocket/dispatcher/ResponseDelivery.java)。
+
+ResponseDelivery 是数据发射器，其继承上述的 [SocketListener](https://github.com/0xZhangKe/WebSocketDemo/blob/3.0/websocketlib/src/main/java/com/zhangke/websocket/SocketListener.java) 接口，另外有提供了几个其他的方法，用它可以将数据发送到各个接收点，我们在处理完数据之后需要使用它把数据发送出去。
+与上面 IResponseDispatcher 中两个方法对应的，这里也有几个方法，同样我也只挑几个重点：
+```java
+//接收到文本消息
+<T> void onMessage(String message, T data);
+//接收到二进制消息
+<T> void onMessage(ByteBuffer bytes, T data);
+//数据发送失败
+void onSendDataError(ErrorResponse errorResponse);
+```
+我们在 IResponseDispatcher 中处理完数据后，就通过上面的几个方法发送出去，这里我主要说一下 onMessage 方法中的泛型 T。
+
+我们在处理数据时可能会将数据先转成一个 JSON，或者转成一个实体类，然后判断 code 值等等，一切都 ok 再发送出去，如果发现需要重新登录可能就直接跳到登录页面去并且拦截掉该条消息。
+那么这里的泛型 T 对应的就是处理后的数据，我们可以把数据发送出去，后面就省得再做一次转换。
+关于这个的具体使用案例可以[点击这里查看](https://github.com/0xZhangKe/WebSocketDemo/blob/3.0/samples/dispatersample/src/main/java/com/zhangke/smaple/dispatersample/AppResponseDispatcher.java)。
+
+另外，消息处理器默认是不会开启的，接收到消息直接发送到各个接收点。
+
+### 对多个 WebSocket 连接的支持
+上面我经常提到一个概念就是默认的 WebSocket 连接，那除了默认的还有别的了吗？当然是有的了，考虑到要连接多个 WebSocket 的场景，3.0 版本特地对此做了支持。
+WebSocketHandler.init(setting) 方法用来初始化默认的连接，同时还有另一个初始化方法：
+```java
+/**
+ * 通过唯一标识符新建一个 WebSocket 连接
+ *
+ * @param key     该 WebSocketManager 的唯一标识符，
+ *                后面需要通过这个 key 来获取到对应的 WebSocketManager
+ * @param setting 该连接的相关设置参数
+ */
+WebSocketManager initGeneralWebSocket(String key, WebSocketSetting setting)
+```
+除了需要一个 WebSocketSetting 之外还需要一个 String 类型的 key，对于除了默认 WebSocket 连接之外的连接，这里用 key 来标识，每一个 key 对应一个连接，内部使用一个散列表维护。
+当我们初始化完成后需要收发数据时通过如下代码获取 WebSocketManager 实例即可：
+```java
+/**
+ * 获取 WebSocketManager 对象
+ *
+ * @param key 该 WebSocketManager 的 key
+ * @return 可能为空，代表该 WebSocketManager 对象不存在或已移除
+ */
+WebSocketManager getWebSocket(String key);
+```
+
+获取到 WebSocketManager 之后其它操作就跟上面说的完全一样了。
+使用完记得及时关闭连接并移除。
