@@ -1,14 +1,13 @@
 package com.zhangke.websocket;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
-import android.util.Log;
 
 import com.zhangke.websocket.dispatcher.ResponseProcessEngine;
+import com.zhangke.websocket.util.LogImpl;
 import com.zhangke.websocket.util.LogUtil;
+import com.zhangke.websocket.util.Logable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,6 +43,8 @@ public class WebSocketHandler {
      * 通过 Map 存储 WSM 对象，以此支持多个连接
      */
     private static Map<String, WebSocketManager> mWebSocketMap;
+
+    private static Logable mLog;
 
     /**
      * 初始化默认的 WebSocket 连接
@@ -189,6 +190,21 @@ public class WebSocketHandler {
                 }
             }
         }
+    }
+
+    /**
+     * 设置打印日志实现类，设置完成后内部运行日志会通过设置的实现类打印。
+     * 需实现 {@link Logable} 接口
+     */
+    public static void setLogable(Logable logable) {
+        mLog = logable;
+    }
+
+    public static Logable getLogable() {
+        if (mLog == null) {
+            mLog = new LogImpl();
+        }
+        return mLog;
     }
 
 }
