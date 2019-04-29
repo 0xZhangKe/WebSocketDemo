@@ -1,5 +1,6 @@
 package com.zhangke.websocket;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
@@ -8,6 +9,7 @@ import com.zhangke.websocket.dispatcher.ResponseProcessEngine;
 import com.zhangke.websocket.util.LogImpl;
 import com.zhangke.websocket.util.LogUtil;
 import com.zhangke.websocket.util.Logable;
+import com.zhangke.websocket.util.PermissionUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -154,12 +156,16 @@ public class WebSocketHandler {
      * @param context 此处应该使用 ApplicationContext，避免内存泄漏以及其它异常。
      */
     public static void registerNetworkChangedReceiver(Context context) {
-        try {
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-            context.registerReceiver(new NetworkChangedReceiver(), filter);
-        } catch (Exception e) {
-            LogUtil.e(TAG, "网络监听广播注册失败：", e);
+        if (PermissionUtil.checkPermission(context, Manifest.permission.ACCESS_NETWORK_STATE)) {
+            try {
+                IntentFilter filter = new IntentFilter();
+                filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+                context.registerReceiver(new NetworkChangedReceiver(), filter);
+            } catch (Exception e) {
+                LogUtil.e(TAG, "网络监听广播注册失败：", e);
+            }
+        } else {
+            LogUtil.e(TAG, "未获取到网络状态权限，广播监听器无法注册");
         }
     }
 
