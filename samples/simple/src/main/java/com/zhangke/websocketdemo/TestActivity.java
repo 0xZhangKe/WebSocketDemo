@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.zhangke.websocket.SimpleListener;
 import com.zhangke.websocket.SocketListener;
 import com.zhangke.websocket.WebSocketHandler;
 import com.zhangke.websocket.response.ErrorResponse;
@@ -23,7 +24,7 @@ public class TestActivity extends AppCompatActivity {
     private TextView tvMsg;
     private ScrollView scrollView;
 
-    private SocketListener socketListener = new SocketListener() {
+    private SocketListener socketListener = new SimpleListener() {
         @Override
         public void onConnected() {
             appendMsgDisplay("onConnected");
@@ -58,24 +59,6 @@ public class TestActivity extends AppCompatActivity {
         public <T> void onMessage(ByteBuffer bytes, T data) {
             appendMsgDisplay("onMessage(ByteBuffer, T):" + bytes);
         }
-
-        @Override
-        public void onPing(Framedata framedata) {
-            if (framedata != null) {
-                appendMsgDisplay("onPing:" + framedata.toString());
-            } else {
-                appendMsgDisplay("onPing:null");
-            }
-        }
-
-        @Override
-        public void onPong(Framedata framedata) {
-            if (framedata != null) {
-                appendMsgDisplay("onPong:" + framedata.toString());
-            } else {
-                appendMsgDisplay("onPong:null");
-            }
-        }
     };
 
     @Override
@@ -109,7 +92,7 @@ public class TestActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 //                WebSocketSetting setting = WebSocketHandler.getDefault().getSetting();
-//                setting.setConnectUrl("url");
+//                setting.setConnectUrl("other url");
 //                WebSocketHandler.getDefault().reconnect(setting);
                 WebSocketHandler.getDefault().reconnect();
             }

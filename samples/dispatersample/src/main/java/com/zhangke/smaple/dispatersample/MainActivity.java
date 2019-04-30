@@ -58,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
                 appendMsgDisplay(responseEntity.getMessage());
             }
         }
-
     };
 
     @Override
