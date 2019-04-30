@@ -88,6 +88,7 @@ public class WebSocketWrapper {
                         mWebSocket.setProxy(mSetting.getProxy());
                     }
                     mWebSocket.connect();
+                    mWebSocket.setConnectionLostTimeout(mSetting.getConnectionLostTimeout());
                     if (needClose) {
                         disConnect();
                     }

@@ -36,6 +36,10 @@ public class WebSocketSetting {
      */
     private boolean reconnectWithNetworkChanged = true;
     /**
+     * 设置心跳间隔时间
+     */
+    private int connectionLostTimeout = 60;
+    /**
      * 代理
      */
     private Proxy mProxy;
@@ -110,6 +114,21 @@ public class WebSocketSetting {
      */
     public void setReconnectWithNetworkChanged(boolean reconnectWithNetworkChanged) {
         this.reconnectWithNetworkChanged = reconnectWithNetworkChanged;
+    }
+
+    /**
+     * 获取心跳间隔时间
+     */
+    public int getConnectionLostTimeout() {
+        return connectionLostTimeout;
+    }
+
+    /**
+     * 设置心跳间隔时间，单位为秒；
+     * 默认为 60 s。
+     */
+    public void setConnectionLostTimeout(int connectionLostTimeout) {
+        this.connectionLostTimeout = connectionLostTimeout;
     }
 
     /**
