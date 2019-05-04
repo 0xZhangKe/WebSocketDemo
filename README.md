@@ -193,7 +193,7 @@ void onSendDataError(ErrorResponse errorResponse);
 
 ### 对多个 WebSocket 连接的支持
 上面我经常提到一个概念就是默认的 WebSocket 连接，那除了默认的还有别的了吗？当然是有的了，考虑到要连接多个 WebSocket 的场景，3.0 版本特地对此做了支持。
-WebSocketHandler.init(setting) 方法用来初始化默认的连接，同时还有另一个初始化方法：
+WebSocketHandler.init(WebSocketSetting) 方法用来初始化默认的连接，同时还有另一个初始化方法：
 ```java
 /**
  * 通过唯一标识符新建一个 WebSocket 连接
