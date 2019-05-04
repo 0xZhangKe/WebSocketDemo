@@ -18,6 +18,8 @@ WebSocket 3.0 版本经过这段时间的开发终于完成并且通过测试，
 
 现在 WebSocketHandler 是个很重要的概念，我们无论是 WebSocket 的初始化、创建连接、断开连接、数据收发等等都要使用它来实现，其中具体的方法列表[点此查看文档](doc)。
 
+如果您还在使用 2.0 版本，那么[请点击这里查看 2.0 版本](/tree/2.2)。
+
 ## 如何集成
 这一点与以前一样，也有两种使用方式。
 
@@ -26,9 +28,11 @@ WebSocket 3.0 版本经过这段时间的开发终于完成并且通过测试，
 ```
 implementation 'com.github.0xZhangKe:WebSocketDemo:3.0'
 ```
-然后 sync 一下，如果出现类似的错误：
 
+然后 sync 一下，如果出现类似的错误：
+```
 Failed to resolve: com.github.0xZhangKe:WebSocketDemo:3.0
+```
 
 那意味着你还没添加 Github 的仓库，到项目根目录中的 build.gradle 中添加如下代码：
 ```
