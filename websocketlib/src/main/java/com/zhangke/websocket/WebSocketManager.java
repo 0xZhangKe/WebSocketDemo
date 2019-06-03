@@ -82,6 +82,13 @@ public class WebSocketManager {
     }
 
     /**
+     * WebSocket 是否已连接
+     */
+    public boolean isConnect() {
+        return mWebSocket != null && mWebSocket.getConnectState() == 2;
+    }
+
+    /**
      * 设置重连管理类。
      * 用户可根据需求设置自己的重连管理类，只需要实现接口即可
      */
@@ -341,14 +348,15 @@ public class WebSocketManager {
                 if (mReconnectManager != null &&
                         mReconnectManager.reconnecting()) {
                     mReconnectManager.onConnectError(e);
-                } else {
-                    mSetting.getResponseDispatcher()
-                            .onConnectFailed(e, mDelivery);
                 }
+                mSetting.getResponseDispatcher()
+                        .onConnectFailed(e, mDelivery);
             }
 
             @Override
             public void onDisconnect() {
+                mSetting.getResponseDispatcher()
+                        .onDisconnect(mDelivery);
                 if (mReconnectManager != null &&
                         mReconnectManager.reconnecting()) {
                     if (disconnect) {
@@ -358,8 +366,6 @@ public class WebSocketManager {
                         mReconnectManager.onConnectError(null);
                     }
                 } else {
-                    mSetting.getResponseDispatcher()
-                            .onDisconnect(mDelivery);
                     if (!disconnect) {
                         if (mReconnectManager == null) {
                             mReconnectManager = getDefaultReconnectManager();
@@ -369,7 +375,6 @@ public class WebSocketManager {
                     }
                 }
             }
-
             @Override
             public void onSendDataError(Request request, int type, Throwable tr) {
                 ErrorResponse errorResponse = ResponseFactory.createErrorResponse();
