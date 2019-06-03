@@ -26,12 +26,12 @@ WebSocket 3.0 版本经过这段时间的开发终于完成并且通过测试，
 ### Gradle 方式集成
 在对应 model 的 build.gradle 中添加依赖：
 ```
-implementation 'com.github.0xZhangKe:WebSocketDemo:3.0.1'
+implementation 'com.github.0xZhangKe:WebSocketDemo:3.1'
 ```
 
 然后 sync 一下，如果出现类似的错误：
 ```
-Failed to resolve: com.github.0xZhangKe:WebSocketDemo:3.0.1
+Failed to resolve: com.github.0xZhangKe:WebSocketDemo:3.1
 ```
 
 那意味着你还没添加 Github 的仓库，到项目根目录中的 build.gradle 中添加如下代码：
