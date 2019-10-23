@@ -234,3 +234,6 @@ setting.setConnectionLostTimeout(50);
 
 ## 声明
 本框架是基于 [Java-WebSocket](https://github.com/TooTallNate/Java-WebSocket) 的二次开发，针对 Android 平台做了一层封装，目的为了简化客户端的使用，算是 WebSocket 与业务层的一个中间桥接层。
+
+大家可以关注下我的公总号，会经常更新一些干货文章：
+![公众号](image/qrcode_for_gsubscription.jpg)
